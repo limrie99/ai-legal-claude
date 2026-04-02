@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Legal Assistant — Agent Observer</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <!-- Disclaimer Banner -->
+  <div class="disclaimer-banner" id="disclaimer-banner">
+    <div class="disclaimer-content">
+      <span class="disclaimer-icon">&#9888;</span>
+      <span class="disclaimer-text">
+        <strong>Legal Disclaimer:</strong> This tool is AI-powered and does <strong>not</strong> provide legal advice.
+        It is not a lawyer, law firm, or substitute for an attorney. All analysis is for informational and educational
+        purposes only. Always consult a licensed attorney before signing any contract or making legal decisions.
+        No attorney-client relationship is created by using this tool. Results may be inaccurate or incomplete.
+      </span>
+      <button class="disclaimer-close" id="disclaimer-close" title="Dismiss">&times;</button>
+    </div>
+  </div>
+
+  <!-- App Body -->
+  <div class="app-body">
+
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">&#9878;</span>
+      <span class="logo-text">Legal Observer</span>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">CONTRACT</div>
+      <div id="contract-info" class="contract-card">
+        <div class="contract-name">No contract loaded</div>
+        <div class="contract-meta"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">AGENTS <span id="agent-count-badge" class="count-badge">0 / 5</span></div>
+      <div id="agent-list" class="agent-list"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-label">SCORE</div>
+      <div id="score-display" class="score-display hidden">
+        <div class="score-gauge">
+          <svg viewBox="0 0 120 120" class="gauge-svg">
+            <circle cx="60" cy="60" r="52" class="gauge-bg"/>
+            <circle cx="60" cy="60" r="52" class="gauge-fill" id="gauge-fill"
+              stroke-dasharray="326.73" stroke-dashoffset="326.73"/>
+          </svg>
+          <div class="gauge-value" id="gauge-value">--</div>
+        </div>
+        <div class="score-grade" id="score-grade"></div>
+        <div class="score-label" id="score-label"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section sidebar-disclaimer">
+      <div class="disclaimer-mini">
+        <span class="disclaimer-mini-icon">&#9878;</span>
+        Not a lawyer. Not legal advice. Always consult a licensed attorney before signing.
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <span class="status-dot" id="status-dot"></span>
+      <span class="status-text" id="status-text">Idle</span>
+    </div>
+  </aside>
+
+  <!-- Main Panel -->
+  <main id="main-panel">
+    <!-- Scope Bar -->
+    <div class="scope-bar">
+      <div class="scope-title">Activity</div>
+      <div class="scope-filters" id="scope-filters">
+        <button class="filter-pill active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="clause">Clauses</button>
+        <button class="filter-pill" data-filter="risk">Risks</button>
+        <button class="filter-pill" data-filter="compliance">Compliance</button>
+        <button class="filter-pill" data-filter="terms">Terms</button>
+        <button class="filter-pill" data-filter="recommendation">Fixes</button>
+      </div>
+      <div class="scope-actions">
+        <button class="btn-viewer hidden" id="btn-view-contract" title="View contract with highlighted problem areas">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          View Contract
+        </button>
+        <button class="btn-pdf hidden" id="btn-download-pdf" title="Download professional PDF report">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Download PDF Report
+        </button>
+        <button class="icon-btn" id="btn-expand-all" title="Expand all">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-auto-scroll" title="Auto-scroll" data-active="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline-container" id="timeline-container">
+      <div class="timeline-header">
+        <span class="timeline-title">Agent Timeline</span>
+        <span class="timeline-elapsed" id="timeline-elapsed">0.0s</span>
+      </div>
+      <div class="timeline-lanes" id="timeline-lanes"></div>
+    </div>
+
+    <!-- Contract Viewer (highlighted) -->
+    <div class="contract-viewer hidden" id="contract-viewer">
+      <div class="viewer-header">
+        <span class="viewer-title">Contract — Highlighted Problem Areas</span>
+        <div class="viewer-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--red)"></span> High Risk</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--yellow)"></span> Medium Risk</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> Low Risk</span>
+        </div>
+        <button class="icon-btn" id="btn-close-viewer" title="Close viewer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="viewer-body" id="viewer-body"></div>
+    </div>
+
+    <!-- Event Stream -->
+    <div class="event-stream-header">
+      <span>Events</span>
+      <span class="event-count" id="event-count">0</span>
+    </div>
+    <div class="event-stream" id="event-stream">
+      <div class="event-empty" id="event-empty">
+        <div class="empty-icon">&#9878;</div>
+        <div class="empty-title">AI Legal Assistant</div>
+        <div class="empty-tagline">Every contract has hidden risks. This tool finds them in 60 seconds.</div>
+
+        <!-- Why This Matters Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value">$300–$500</div>
+            <div class="stat-label">Avg. legal review cost <em>per hour</em></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">82%</div>
+            <div class="stat-label">Freelancers who don't read contracts before signing</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">$10,000+</div>
+            <div class="stat-label">Cost of one bad clause</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">&lt; 60s</div>
+            <div class="stat-label">Time to review with this tool</div>
+          </div>
+        </div>
+
+        <div class="empty-subtitle">Upload a contract to begin analysis</div>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="file-input" accept=".pdf,.txt,.md,.doc,.docx" hidden>
+          <div class="upload-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="upload-text">Drag & drop your contract here</div>
+          <div class="upload-hint">or <button class="upload-browse-btn" id="btn-browse">browse files</button></div>
+          <div class="upload-formats">.pdf, .txt, .md, .doc, .docx</div>
+        </div>
+
+        <!-- Paste Area -->
+        <div class="paste-section">
+          <div class="paste-divider"><span>or paste contract text</span></div>
+          <div class="paste-area-wrap">
+            <textarea id="paste-area" class="paste-area" placeholder="Paste your contract text here..." rows="4"></textarea>
+            <button class="btn-secondary" id="btn-paste-analyze" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Analyze
+            </button>
+          </div>
+        </div>
+
+        <!-- Demo shortcut -->
+        <div class="demo-section">
+          <div class="paste-divider"><span>or try the demo</span></div>
+          <button class="btn-ghost" id="btn-demo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Run Demo with Sample Contract
+          </button>
+          <div class="empty-hint">Nexus Digital Solutions LLC — Independent Contractor Agreement</div>
+        </div>
+
+        <!-- Upload progress (hidden by default) -->
+        <div class="upload-progress hidden" id="upload-progress">
+          <div class="upload-file-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="upload-file-info">
+            <div class="upload-file-name" id="upload-file-name"></div>
+            <div class="upload-file-size" id="upload-file-size"></div>
+          </div>
+          <div class="upload-file-status" id="upload-file-status">Reading...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  </div><!-- /app-body -->
+
+  <!-- Page-level disclaimer footer -->
+  <div class="page-disclaimer" id="page-disclaimer">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    This tool does not provide legal advice and is not a substitute for a licensed attorney.
+    All analysis is AI-generated for informational purposes only. No attorney-client relationship is created.
+  </div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
