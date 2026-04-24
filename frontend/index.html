@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Legal Assistant — Agent Observer</title>
+  <title>Codex 5.5 Legal Dashboard</title>
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -28,8 +28,18 @@
   <!-- Sidebar -->
   <aside id="sidebar">
     <div class="sidebar-header">
-      <span class="logo-icon">&#9878;</span>
-      <span class="logo-text">Legal Observer</span>
+      <span class="logo-mark">C5.5</span>
+      <span class="logo-text">Legal Ops</span>
+    </div>
+
+    <div class="sidebar-section codex-panel">
+      <div class="codex-model">Codex 5.5</div>
+      <div class="codex-mode">Contract intelligence dashboard</div>
+      <div class="codex-stack">
+        <span>Preflight</span>
+        <span>Risk</span>
+        <span>Redline</span>
+      </div>
     </div>
 
     <div class="sidebar-section">
@@ -78,7 +88,7 @@
   <main id="main-panel">
     <!-- Scope Bar -->
     <div class="scope-bar">
-      <div class="scope-title">Activity</div>
+      <div class="scope-title">Command Feed</div>
       <div class="scope-filters" id="scope-filters">
         <button class="filter-pill active" data-filter="all">All</button>
         <button class="filter-pill" data-filter="clause">Clauses</button>
@@ -136,14 +146,43 @@
 
     <!-- Event Stream -->
     <div class="event-stream-header">
-      <span>Events</span>
+      <span>Live Review Feed</span>
       <span class="event-count" id="event-count">0</span>
     </div>
     <div class="event-stream" id="event-stream">
       <div class="event-empty" id="event-empty">
-        <div class="empty-icon">&#9878;</div>
-        <div class="empty-title">AI Legal Assistant</div>
-        <div class="empty-tagline">Every contract has hidden risks. This tool finds them in 60 seconds.</div>
+        <div class="command-dashboard">
+          <div class="hero-kicker">Codex 5.5 legal operations console</div>
+          <div class="hero-row">
+            <div>
+              <div class="empty-title">Contract Review Command Center</div>
+              <div class="empty-tagline">Upload a contract, watch five specialist agents inspect it, then export a practical risk report and redline plan.</div>
+            </div>
+            <div class="model-card" aria-label="Model status">
+              <span class="model-label">Model</span>
+              <strong>Codex 5.5</strong>
+              <span class="model-state">Ready</span>
+            </div>
+          </div>
+
+          <div class="ops-strip" aria-label="Workflow steps">
+            <div class="ops-step">
+              <span class="ops-number">01</span>
+              <strong>Preflight</strong>
+              <span>Role, jurisdiction, value, risk posture.</span>
+            </div>
+            <div class="ops-step">
+              <span class="ops-number">02</span>
+              <strong>Parallel Review</strong>
+              <span>Clauses, risk, compliance, terms, fixes.</span>
+            </div>
+            <div class="ops-step">
+              <span class="ops-number">03</span>
+              <strong>Action Pack</strong>
+              <span>PDF report, priorities, replacement language.</span>
+            </div>
+          </div>
+        </div>
 
         <!-- Why This Matters Stats -->
         <div class="stats-grid">
@@ -165,7 +204,14 @@
           </div>
         </div>
 
-        <div class="empty-subtitle">Upload a contract to begin analysis</div>
+        <div class="intake-shell">
+          <div class="intake-header">
+            <div>
+              <div class="empty-subtitle">Start a review</div>
+              <div class="intake-copy">Use a PDF, text file, or pasted contract. Sensitive documents should only be shared with people you trust.</div>
+            </div>
+            <div class="safety-chip">Not legal advice</div>
+          </div>
 
         <!-- Upload Zone -->
         <div class="upload-zone" id="upload-zone">
@@ -177,16 +223,16 @@
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
           </div>
-          <div class="upload-text">Drag & drop your contract here</div>
+          <div class="upload-text">Drop a contract into the review bay</div>
           <div class="upload-hint">or <button class="upload-browse-btn" id="btn-browse">browse files</button></div>
-          <div class="upload-formats">.pdf, .txt, .md, .doc, .docx</div>
+          <div class="upload-formats">PDF, TXT, MD, DOC, DOCX</div>
         </div>
 
         <!-- Paste Area -->
         <div class="paste-section">
           <div class="paste-divider"><span>or paste contract text</span></div>
           <div class="paste-area-wrap">
-            <textarea id="paste-area" class="paste-area" placeholder="Paste your contract text here..." rows="4"></textarea>
+            <textarea id="paste-area" class="paste-area" placeholder="Paste contract text here. Include the full agreement when possible..." rows="4"></textarea>
             <button class="btn-secondary" id="btn-paste-analyze" disabled>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Analyze
@@ -199,9 +245,10 @@
           <div class="paste-divider"><span>or try the demo</span></div>
           <button class="btn-ghost" id="btn-demo">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Run Demo with Sample Contract
+            Run Sample Review
           </button>
           <div class="empty-hint">Nexus Digital Solutions LLC — Independent Contractor Agreement</div>
+        </div>
         </div>
 
         <!-- Upload progress (hidden by default) -->
