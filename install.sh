@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================================================
 # AI Legal Assistant — Claude Code Skills Installer
-# 14 Skills · 5 Agents · PDF Reports
+# 15 Skills · 5 Agents · PDF Reports
 # ============================================================================
 set -e
 
@@ -17,7 +17,7 @@ echo ""
 echo -e "${BLUE}╔══════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║                                                              ║${NC}"
 echo -e "${BLUE}║${NC}   ${CYAN}AI Legal Assistant — Claude Code Skills${NC}                   ${BLUE}║${NC}"
-echo -e "${BLUE}║${NC}   ${GREEN}14 Skills · 5 Agents · PDF Reports${NC}                       ${BLUE}║${NC}"
+echo -e "${BLUE}║${NC}   ${GREEN}15 Skills · 5 Agents · PDF Reports${NC}                       ${BLUE}║${NC}"
 echo -e "${BLUE}║                                                              ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
@@ -93,7 +93,7 @@ if [ -f "$SOURCE_DIR/legal/SKILL.md" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# Install 13 sub-skills
+# Install 14 sub-skills
 # ---------------------------------------------------------------------------
 SKILLS=(
     legal-review
@@ -101,6 +101,7 @@ SKILLS=(
     legal-compare
     legal-plain
     legal-negotiate
+    legal-redline
     legal-missing
     legal-nda
     legal-terms
@@ -225,6 +226,7 @@ echo -e "  ${CYAN}/legal risks <file>${NC}             Deep risk analysis"
 echo -e "  ${CYAN}/legal compare <f1> <f2>${NC}        Side-by-side comparison"
 echo -e "  ${CYAN}/legal plain <file>${NC}             Plain English translation"
 echo -e "  ${CYAN}/legal negotiate <file>${NC}         Counter-proposal generator"
+echo -e "  ${CYAN}/legal redline <file>${NC}           Insertion-ready redlines"
 echo -e "  ${CYAN}/legal missing <file>${NC}           Missing protections finder"
 echo -e "  ${CYAN}/legal nda <description>${NC}        Generate custom NDA"
 echo -e "  ${CYAN}/legal terms <url>${NC}              Generate terms of service"

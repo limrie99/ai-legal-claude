@@ -78,6 +78,8 @@ Identify the contract type to calibrate analysis:
 | **Sales / Purchase** | "buyer," "seller," "purchase price," "warranty" | Warranty limitations, return policies, indemnification |
 | **Investment / SAFE** | "investor," "valuation cap," "equity," "convertible" | Dilution, liquidation preferences, board rights, pro-rata |
 
+After classification, consult `templates/contract-type-playbooks.md` for the closest matching playbook. Use it to calibrate expected clauses, market norms, dealbreakers, fallback positions, and missing-protection checks. If no playbook matches exactly, state the closest playbook used and mark that assumption `[VERIFY]`.
+
 ### 1.3 Extract Contract Metadata
 
 Extract and store:
