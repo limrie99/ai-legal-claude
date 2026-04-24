@@ -1,0 +1,201 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/limrie99/ai-legal-claude/schemas/contract-review.schema.json",
+  "title": "AI Legal Assistant Contract Review Report",
+  "type": "object",
+  "required": [
+    "disclaimer",
+    "preflight",
+    "contract_details",
+    "score",
+    "risk_dashboard",
+    "clauses",
+    "missing_protections",
+    "obligations",
+    "compliance_flags",
+    "negotiation_priorities",
+    "next_steps"
+  ],
+  "properties": {
+    "disclaimer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "preflight": {
+      "type": "object",
+      "required": ["reviewer_role", "jurisdiction", "contract_value", "business_context", "risk_tolerance"],
+      "properties": {
+        "reviewer_role": { "$ref": "#/$defs/preflightField" },
+        "jurisdiction": { "$ref": "#/$defs/preflightField" },
+        "contract_value": { "$ref": "#/$defs/preflightField" },
+        "business_context": { "$ref": "#/$defs/preflightField" },
+        "risk_tolerance": { "$ref": "#/$defs/preflightField" }
+      },
+      "additionalProperties": false
+    },
+    "contract_details": {
+      "type": "object",
+      "required": ["type", "parties", "effective_date", "term", "total_value", "governing_law"],
+      "properties": {
+        "type": { "type": "string" },
+        "parties": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "effective_date": { "type": "string" },
+        "term": { "type": "string" },
+        "total_value": { "type": "string" },
+        "governing_law": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "score": {
+      "type": "object",
+      "required": ["value", "grade", "label", "summary"],
+      "properties": {
+        "value": { "type": "number", "minimum": 0, "maximum": 100 },
+        "grade": { "type": "string" },
+        "label": { "type": "string" },
+        "summary": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "risk_dashboard": {
+      "type": "object",
+      "required": ["high", "medium", "low"],
+      "properties": {
+        "high": { "$ref": "#/$defs/riskBucket" },
+        "medium": { "$ref": "#/$defs/riskBucket" },
+        "low": { "$ref": "#/$defs/riskBucket" }
+      },
+      "additionalProperties": false
+    },
+    "clauses": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/clauseFinding" }
+    },
+    "missing_protections": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/missingProtection" }
+    },
+    "obligations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/obligation" }
+    },
+    "compliance_flags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/complianceFlag" }
+    },
+    "negotiation_priorities": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/priority" }
+    },
+    "next_steps": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "preflightField": {
+      "type": "object",
+      "required": ["value", "source", "confidence"],
+      "properties": {
+        "value": { "type": "string" },
+        "source": { "enum": ["user", "contract", "assumed"] },
+        "confidence": { "enum": ["high", "medium", "low"] }
+      },
+      "additionalProperties": false
+    },
+    "riskBucket": {
+      "type": "object",
+      "required": ["count", "clauses"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 0 },
+        "clauses": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "clauseFinding": {
+      "type": "object",
+      "required": [
+        "section",
+        "name",
+        "risk_level",
+        "risk_score",
+        "evidence_excerpt",
+        "confidence",
+        "summary",
+        "risk_explanation",
+        "potential_impact",
+        "recommendation",
+        "verify_flags"
+      ],
+      "properties": {
+        "section": { "type": "string" },
+        "name": { "type": "string" },
+        "risk_level": { "enum": ["high", "medium", "low"] },
+        "risk_score": { "type": "number", "minimum": 0, "maximum": 10 },
+        "evidence_excerpt": { "type": "string" },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "summary": { "type": "string" },
+        "risk_explanation": { "type": "string" },
+        "potential_impact": { "type": "string" },
+        "recommendation": { "type": "string" },
+        "verify_flags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "missingProtection": {
+      "type": "object",
+      "required": ["name", "why_it_matters", "risk_level", "recommendation"],
+      "properties": {
+        "name": { "type": "string" },
+        "why_it_matters": { "type": "string" },
+        "risk_level": { "enum": ["high", "medium", "low"] },
+        "recommendation": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "obligation": {
+      "type": "object",
+      "required": ["description", "party", "deadline", "consequence"],
+      "properties": {
+        "description": { "type": "string" },
+        "party": { "type": "string" },
+        "deadline": { "type": "string" },
+        "consequence": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "complianceFlag": {
+      "type": "object",
+      "required": ["title", "framework", "finding", "severity", "verify_current_law"],
+      "properties": {
+        "title": { "type": "string" },
+        "framework": { "type": "string" },
+        "finding": { "type": "string" },
+        "severity": { "enum": ["high", "medium", "low"] },
+        "verify_current_law": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "priority": {
+      "type": "object",
+      "required": ["rank", "issue", "requested_change", "proposed_language"],
+      "properties": {
+        "rank": { "type": "integer", "minimum": 1 },
+        "issue": { "type": "string" },
+        "requested_change": { "type": "string" },
+        "proposed_language": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
