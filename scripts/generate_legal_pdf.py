@@ -203,8 +203,82 @@ def get_styles():
 # ---------------------------------------------------------------------------
 # PDF Builder
 # ---------------------------------------------------------------------------
+def normalize_report_data(data):
+    """Accept either the legacy PDF JSON or the contract-review schema."""
+    if "contract_details" not in data:
+        return data
+
+    score = data.get("score", {})
+    details = data.get("contract_details", {})
+    dashboard = data.get("risk_dashboard", {})
+
+    def bucket(level):
+        value = dashboard.get(level, {})
+        return {
+            "count": value.get("count", 0),
+            "clauses": ", ".join(value.get("clauses", [])) or "None",
+        }
+
+    high = bucket("high")
+    medium = bucket("medium")
+    low = bucket("low")
+
+    clauses = []
+    for clause in data.get("clauses", []):
+        clauses.append({
+            "name": clause.get("name", "Unnamed Clause"),
+            "section": clause.get("section", "N/A"),
+            "risk": clause.get("risk_level", "low"),
+            "summary": clause.get("summary", ""),
+            "risk_explanation": clause.get("risk_explanation", ""),
+            "recommendation": clause.get("recommendation", ""),
+        })
+
+    priorities = []
+    for item in data.get("negotiation_priorities", []):
+        issue = item.get("issue", "")
+        change = item.get("requested_change", "")
+        language = item.get("proposed_language", "")
+        priorities.append(" — ".join(part for part in [issue, change, language] if part))
+
+    missing = []
+    for item in data.get("missing_protections", []):
+        name = item.get("name", "")
+        why = item.get("why_it_matters", "")
+        recommendation = item.get("recommendation", "")
+        missing.append(" — ".join(part for part in [name, why, recommendation] if part))
+
+    return {
+        "score": score.get("value", 0),
+        "grade": score.get("grade", "N/A"),
+        "grade_label": score.get("label", ""),
+        "details": {
+            "type": details.get("type", "N/A"),
+            "parties": " / ".join(details.get("parties", [])) or "N/A",
+            "effective_date": details.get("effective_date", "N/A"),
+            "term": details.get("term", "N/A"),
+            "total_value": details.get("total_value", "N/A"),
+            "governing_law": details.get("governing_law", "N/A"),
+        },
+        "executive_summary": score.get("summary", ""),
+        "risks": {
+            "high": high["count"],
+            "medium": medium["count"],
+            "low": low["count"],
+            "high_clauses": high["clauses"],
+            "medium_clauses": medium["clauses"],
+            "low_clauses": low["clauses"],
+        },
+        "clauses": clauses,
+        "negotiation_priorities": priorities,
+        "missing_protections": missing,
+        "next_steps": data.get("next_steps", []),
+    }
+
+
 def build_pdf(data, output_path):
     """Build the PDF report from structured data."""
+    data = normalize_report_data(data)
     styles = get_styles()
     doc = SimpleDocTemplate(
         output_path, pagesize=letter,

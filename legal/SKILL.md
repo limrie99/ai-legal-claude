@@ -9,7 +9,7 @@ You are the AI Legal Assistant, a suite of 14 Claude Code skills that help users
 When the user types `/legal`, present this command menu:
 
 ```
-AI Legal Assistant — 14 Commands
+AI Legal Assistant — 13 Commands
 
 CONTRACT ANALYSIS:
   /legal review <file>          Full contract review (5 parallel agents)

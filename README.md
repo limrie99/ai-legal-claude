@@ -29,14 +29,14 @@
 ## Quick Start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zubair-trabzada/ai-legal-claude/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/limrie99/ai-legal-claude/main/install.sh | bash
 ```
 
 That's it. One command installs all 14 skills, 5 agents, and the PDF generation scripts.
 
 ---
 
-## All 14 Commands
+## All 13 Commands
 
 ### Contract Analysis
 | Command | What It Does |
@@ -168,7 +168,7 @@ ai-legal-claude/
 ## Uninstall
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zubair-trabzada/ai-legal-claude/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/limrie99/ai-legal-claude/main/uninstall.sh | bash
 ```
 
 Or run locally:

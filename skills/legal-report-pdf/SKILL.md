@@ -14,11 +14,12 @@ The user runs `/legal report-pdf` after having completed a contract review (via 
 
 Search for the most recent contract review output file in the working directory. Look for files matching these patterns (in order of preference):
 
-1. `CONTRACT-REVIEW-*.md`
-2. `FREELANCER-REVIEW-*.md`
-3. `COMPLIANCE-AUDIT-*.md`
-4. `NDA-REVIEW-*.md`
-5. Any `.md` file containing "Contract Safety Score" or "Freelancer Fairness Score" or "Compliance Scorecard"
+1. `CONTRACT-REVIEW-*.json`
+2. `CONTRACT-REVIEW-*.md`
+3. `FREELANCER-REVIEW-*.md`
+4. `COMPLIANCE-AUDIT-*.md`
+5. `NDA-REVIEW-*.md`
+6. Any `.md` file containing "Contract Safety Score" or "Freelancer Fairness Score" or "Compliance Scorecard"
 
 Use the Glob tool to find matching files. If multiple matches exist, use the most recently modified file.
 
@@ -28,7 +29,7 @@ Use the Glob tool to find matching files. If multiple matches exist, use the mos
 
 ### 1.2 Parse the Analysis Data
 
-Read the analysis file and extract:
+If a `CONTRACT-REVIEW-*.json` file exists, validate that it follows `schemas/contract-review.schema.json` and use it as the source of truth. If no JSON file exists, read the analysis Markdown file and extract:
 
 | Data Point | Where to Find It |
 |-----------|-----------------|
@@ -54,19 +55,21 @@ Read the analysis file and extract:
 
 Search for the PDF generation Python script in these locations (in order):
 
-1. `[working directory]/ai-legal-claude/scripts/generate_pdf_report.py`
-2. `[working directory]/scripts/generate_pdf_report.py`
-3. `../scripts/generate_pdf_report.py` (one level up from working directory)
+1. `[working directory]/ai-legal-claude/scripts/generate_legal_pdf.py`
+2. `[working directory]/scripts/generate_legal_pdf.py`
+3. `../scripts/generate_legal_pdf.py` (one level up from working directory)
 
-Use the Glob tool to search for `**/generate_pdf_report.py` within the project.
+Use the Glob tool to search for `**/generate_legal_pdf.py` within the project.
 
 ### 2.2 If Script Found
 
-Run the script, passing it the path to the analysis markdown file:
+Run the script, passing it the path to the analysis JSON file when available:
 
 ```bash
-python3 [script_path] --input [analysis_file_path] --output CONTRACT-REVIEW-REPORT.pdf
+python3 [script_path] [analysis_json_path] CONTRACT-REVIEW-REPORT.pdf
 ```
+
+If only Markdown exists, first transform the parsed data into the JSON structure described by `schemas/contract-review.schema.json`, then pass that JSON file to the script.
 
 ### 2.3 If Script Not Found — Generate Inline
 

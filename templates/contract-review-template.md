@@ -18,6 +18,18 @@ Scoring Guide:
 
 ---
 
+## Preflight Assumptions
+
+| Field | Value | Source | Confidence |
+|-------|-------|--------|------------|
+| **Reviewer Role** | [e.g., "Freelancer reviewing client agreement"] | [User / Contract / Assumed] | [High / Medium / Low] |
+| **Jurisdiction** | [e.g., "California governing law; reviewer in Texas"] | [User / Contract / Assumed] | [High / Medium / Low] |
+| **Contract Value** | [e.g., "$50,000 fixed fee"] | [User / Contract / Assumed] | [High / Medium / Low] |
+| **Business Context** | [e.g., "Software development services"] | [User / Contract / Assumed] | [High / Medium / Low] |
+| **Risk Tolerance** | [e.g., "Balanced, relationship-preserving"] | [User / Assumed] | [High / Medium / Low] |
+
+---
+
 ## Executive Summary
 
 <!-- Write 3-4 sentences covering: what type of contract this is, the overall risk posture, the most significant finding, and the top-level recommendation (sign as-is, negotiate, or do not sign). -->
@@ -57,6 +69,10 @@ Scoring Guide:
 
 #### [Clause Name] — Section [X.X]
 
+- **Evidence:** "[Short exact quote from the contract supporting this finding.]"
+
+- **Confidence:** [High / Medium / Low]
+
 - **What it says:** [Plain English summary of what this clause means. No legal jargon. Write as if explaining to someone with no legal background. Example: "If either side breaks the contract, you have to pay for all their legal costs, even if they were partially at fault."]
 
 - **Why it's risky:** [Specific explanation of the danger. Quantify where possible. Example: "This is one-sided indemnification — you bear all legal costs even if the client contributed to the problem. In a typical dispute, legal fees alone can run $20,000-$100,000+."]
@@ -74,6 +90,10 @@ Scoring Guide:
 <!-- Repeat this block for EACH medium-risk clause. Same format as high risk. -->
 
 #### [Clause Name] — Section [X.X]
+
+- **Evidence:** "[Short exact quote from the contract supporting this finding.]"
+
+- **Confidence:** [High / Medium / Low]
 
 - **What it says:** [Plain English summary]
 
@@ -129,6 +149,8 @@ Scoring Guide:
 
 <!-- Note any regulatory, legal, or jurisdictional concerns. These are issues beyond the contract text itself — external legal factors that affect enforceability or risk. -->
 
+Mark time-sensitive or jurisdiction-specific conclusions with `[VERIFY CURRENT LAW]`, especially employment restrictions, non-competes, privacy thresholds, consumer protection requirements, and arbitration/class waiver enforceability.
+
 - **[Flag Title]:** [Description. Example: "Non-compete clause may be unenforceable in California (Cal. Bus. & Prof. Code Section 16600). If either party is based in CA, this clause is likely void."]
 
 - **[Flag Title]:** [Description. Example: "Contract involves processing EU personal data but contains no GDPR-compliant Data Processing Agreement. A DPA addendum is required under GDPR Article 28."]
@@ -169,6 +191,15 @@ Scoring Guide:
 
 ---
 
+## Structured JSON Output
+
+<!--
+Generate a companion CONTRACT-REVIEW-[name]-[date].json file using schemas/contract-review.schema.json.
+The JSON output is the source of truth for PDF generation and downstream automation.
+Every clause finding must include section, name, risk_level, risk_score, evidence_excerpt,
+confidence, summary, risk_explanation, potential_impact, recommendation, and verify_flags.
+-->
+
 <!--
 TEMPLATE USAGE NOTES:
 
@@ -177,13 +208,14 @@ TEMPLATE USAGE NOTES:
 3. Add additional clauses to the Clause-by-Clause Analysis as needed.
 4. The Risk Dashboard counts should match the actual clauses listed.
 5. Negotiation Priorities should reference specific section numbers from the contract.
-6. Missing Protections should be tailored to the contract type:
+6. Every material finding should include a short evidence excerpt and confidence level.
+7. Missing Protections should be tailored to the contract type:
    - Service Agreements: SLA, warranty, acceptance criteria
    - Employment: severance, equity vesting, benefits
    - NDAs: exclusions, duration, permitted disclosures
    - SaaS: uptime SLA, data portability, exit assistance
    - Freelancer: kill fee, revision limits, portfolio rights
-7. All risk levels (🔴🟡🟢) should be assigned consistently:
+8. All risk levels (🔴🟡🟢) should be assigned consistently:
    - 🔴 High: Could cause significant financial loss, legal liability, or loss of rights
    - 🟡 Medium: Could cause moderate disadvantage or create ambiguity
    - 🟢 Low: Minor issue or standard clause with small improvement possible
