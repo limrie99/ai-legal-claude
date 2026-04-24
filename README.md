@@ -34,6 +34,8 @@ curl -fsSL https://raw.githubusercontent.com/limrie99/ai-legal-claude/main/insta
 
 That's it. One command installs all 15 skills, 5 agents, and the PDF generation scripts.
 
+Want to share the browser app with someone else? See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for a Render deployment guide that keeps the Anthropic API key private.
+
 ---
 
 ## All 14 Commands
