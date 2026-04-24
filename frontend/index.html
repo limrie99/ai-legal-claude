@@ -6,6 +6,12 @@
   <title>Codex 5.5 Legal Dashboard</title>
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
+  <script type="module">
+    import * as pdfjsLib from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+    window.pdfjsLib = pdfjsLib;
+  </script>
 </head>
 <body>
   <!-- Disclaimer Banner -->
@@ -215,7 +221,7 @@
 
         <!-- Upload Zone -->
         <div class="upload-zone" id="upload-zone">
-          <input type="file" id="file-input" accept=".pdf,.txt,.md,.doc,.docx" hidden>
+          <input type="file" id="file-input" accept=".pdf,.txt,.md" hidden>
           <div class="upload-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -225,7 +231,7 @@
           </div>
           <div class="upload-text">Drop a contract into the review bay</div>
           <div class="upload-hint">or <button class="upload-browse-btn" id="btn-browse">browse files</button></div>
-          <div class="upload-formats">PDF, TXT, MD, DOC, DOCX</div>
+          <div class="upload-formats">PDF, TXT, MD</div>
         </div>
 
         <!-- Paste Area -->
