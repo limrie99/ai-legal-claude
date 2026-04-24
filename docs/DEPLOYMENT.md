@@ -6,6 +6,8 @@ This guide shows how to put the browser app online so someone else can open a li
 
 Render can host the Python backend and the frontend together. This is the safest simple option because the Anthropic API key stays on the server as a private environment variable. Do not put the API key in the frontend or in GitHub Pages.
 
+[Deploy on Render](https://render.com/deploy?repo=https://github.com/limrie99/ai-legal-claude)
+
 ### What You Need
 
 - A GitHub account with access to this repository.
@@ -15,7 +17,7 @@ Render can host the Python backend and the frontend together. This is the safest
 ### Deploy Steps
 
 1. Push this repository to GitHub.
-2. Go to Render and choose **New +** then **Blueprint**.
+2. Click **Deploy on Render** above, or go to Render and choose **New +** then **Blueprint**.
 3. Connect the GitHub repository.
 4. Render will detect `render.yaml`.
 5. When Render asks for environment variables, add:

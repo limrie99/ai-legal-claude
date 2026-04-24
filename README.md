@@ -36,6 +36,8 @@ That's it. One command installs all 15 skills, 5 agents, and the PDF generation 
 
 Want to share the browser app with someone else? See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for a Render deployment guide that keeps the Anthropic API key private.
 
+[Deploy on Render](https://render.com/deploy?repo=https://github.com/limrie99/ai-legal-claude)
+
 ---
 
 ## All 14 Commands
