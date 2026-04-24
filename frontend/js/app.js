@@ -241,7 +241,7 @@ async function parsePdfFile(file) {
     const wordCount = text.split(/\s+/).filter(Boolean).length;
 
     if (wordCount < 25) {
-      throw new Error('No readable text was found in this PDF. It may be scanned or image-only.');
+      throw new Error('No readable text was found in this PDF. It may be scanned or image-only, and OCR did not recover enough text.');
     }
 
     uploadedContractText = text;
@@ -521,7 +521,10 @@ async function extractTextFromPDFBinary(arrayBuffer) {
       pages.push(lines.join(' ').replace(/\s+\n\s+/g, '\n').replace(/[ \t]{2,}/g, ' ').trim());
     }
 
-    return pages.join('\n\n').trim();
+    const extracted = pages.join('\n\n').trim();
+    if (extracted.split(/\s+/).filter(Boolean).length >= 25) return extracted;
+
+    return await extractPdfTextWithOcr(pdf);
   }
 
   try {
@@ -538,6 +541,32 @@ async function extractTextFromPDFBinary(arrayBuffer) {
     const readable = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s{3,}/g, ' ').trim();
     return readable.length > 100 ? readable : null;
   } catch { return null; }
+}
+
+async function extractPdfTextWithOcr(pdf) {
+  if (!window.Tesseract) return '';
+
+  const pageLimit = pdf.numPages;
+  const ocrPages = [];
+  $('#upload-file-status').textContent = 'OCR reading...';
+
+  for (let pageNumber = 1; pageNumber <= pageLimit; pageNumber++) {
+    $('#upload-file-status').textContent = `OCR page ${pageNumber}/${pageLimit}`;
+    const page = await pdf.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+
+    await page.render({ canvasContext: context, viewport }).promise;
+    const result = await window.Tesseract.recognize(canvas, 'eng');
+    const text = result?.data?.text?.trim();
+    if (text) ocrPages.push(text);
+    canvas.width = 0;
+    canvas.height = 0;
+  }
+  return ocrPages.join('\n\n').trim();
 }
 
 // ── Start Demo ──
