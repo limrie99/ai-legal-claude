@@ -185,14 +185,12 @@ function handleFile(file) {
     'application/pdf',
     'text/plain',
     'text/markdown',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ];
-  const validExts = ['.pdf', '.txt', '.md', '.doc', '.docx'];
+  const validExts = ['.pdf', '.txt', '.md'];
   const ext = '.' + file.name.split('.').pop().toLowerCase();
 
   if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
-    alert('Unsupported file type. Please upload a .pdf, .txt, .md, .doc, or .docx file.');
+    alert('Unsupported file type. Please upload a PDF, TXT, or Markdown file. For Word docs, export as PDF or paste the text.');
     return;
   }
 
@@ -213,22 +211,7 @@ function handleFile(file) {
 
   // Read the file
   if (ext === '.pdf') {
-    // For PDFs, we read as text (basic extraction). Real PDF parsing would need a library.
-    const reader = new FileReader();
-    reader.onload = () => {
-      // Try to extract text from PDF (basic approach)
-      const text = extractTextFromPDFBinary(reader.result);
-      uploadedContractText = text || null;
-      useRealAI = !!uploadedContractText;
-      $('#upload-file-status').textContent = uploadedContractText ? 'Parsed' : 'Parsed (demo)';
-      $('#upload-file-status').style.color = 'var(--green)';
-      $('#upload-file-status').style.animation = 'none';
-      const meta = uploadedContractText
-        ? `${uploadedContractText.split('\\n').length} lines \u00b7 ${uploadedContractText.split(/\\s+/).filter(Boolean).length.toLocaleString()} words`
-        : `PDF document \u00b7 ${formatFileSize(file.size)}`;
-      startAnalysis(file.name, meta);
-    };
-    reader.readAsArrayBuffer(file);
+    parsePdfFile(file);
   } else {
     // Read text-based files
     const reader = new FileReader();
@@ -245,6 +228,49 @@ function handleFile(file) {
     };
     reader.readAsText(file);
   }
+}
+
+async function parsePdfFile(file) {
+  try {
+    if (!window.pdfjsLib) {
+      throw new Error('PDF reader is still loading. Please wait a moment and try again.');
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const text = await extractTextFromPDFBinary(arrayBuffer);
+    const wordCount = text.split(/\s+/).filter(Boolean).length;
+
+    if (wordCount < 25) {
+      throw new Error('No readable text was found in this PDF. It may be scanned or image-only, and OCR did not recover enough text.');
+    }
+
+    uploadedContractText = text;
+    useRealAI = true;
+    const lineCount = text.split('\n').length;
+    $('#upload-file-status').textContent = 'Parsed';
+    $('#upload-file-status').style.color = 'var(--green)';
+    $('#upload-file-status').style.animation = 'none';
+    startAnalysis(file.name, `${lineCount} lines \u00b7 ${wordCount.toLocaleString()} words`);
+  } catch (err) {
+    uploadedContractText = null;
+    useRealAI = false;
+    $('#upload-file-status').textContent = 'Could not read PDF text';
+    $('#upload-file-status').style.color = 'var(--red)';
+    $('#upload-file-status').style.animation = 'none';
+    alert(`${err.message}\n\nTry copying the contract text and pasting it into the text box instead.`);
+    resetUploadForm();
+  }
+}
+
+function resetUploadForm() {
+  const zone = $('#upload-zone');
+  const pasteSection = zone.nextElementSibling;
+  const demoSection = pasteSection?.nextElementSibling;
+  const progress = $('#upload-progress');
+  zone.style.display = '';
+  if (pasteSection) pasteSection.style.display = '';
+  if (demoSection) demoSection.style.display = '';
+  if (progress) progress.classList.add('hidden');
 }
 
 function handlePastedText(text) {
@@ -474,7 +500,33 @@ function onAllAgentsCompleteLive() {
 }
 
 // ── Basic PDF text extraction (best-effort) ──
-function extractTextFromPDFBinary(arrayBuffer) {
+async function extractTextFromPDFBinary(arrayBuffer) {
+  if (window.pdfjsLib) {
+    const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages = [];
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+      const page = await pdf.getPage(pageNumber);
+      const content = await page.getTextContent();
+      const lines = [];
+      let lastY = null;
+
+      for (const item of content.items) {
+        const y = Math.round(item.transform?.[5] || 0);
+        if (lastY !== null && Math.abs(y - lastY) > 4) lines.push('\n');
+        lines.push(item.str);
+        lastY = y;
+      }
+
+      pages.push(lines.join(' ').replace(/\s+\n\s+/g, '\n').replace(/[ \t]{2,}/g, ' ').trim());
+    }
+
+    const extracted = pages.join('\n\n').trim();
+    if (extracted.split(/\s+/).filter(Boolean).length >= 25) return extracted;
+
+    return await extractPdfTextWithOcr(pdf);
+  }
+
   try {
     const bytes = new Uint8Array(arrayBuffer);
     const text = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
@@ -489,6 +541,32 @@ function extractTextFromPDFBinary(arrayBuffer) {
     const readable = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s{3,}/g, ' ').trim();
     return readable.length > 100 ? readable : null;
   } catch { return null; }
+}
+
+async function extractPdfTextWithOcr(pdf) {
+  if (!window.Tesseract) return '';
+
+  const pageLimit = pdf.numPages;
+  const ocrPages = [];
+  $('#upload-file-status').textContent = 'OCR reading...';
+
+  for (let pageNumber = 1; pageNumber <= pageLimit; pageNumber++) {
+    $('#upload-file-status').textContent = `OCR page ${pageNumber}/${pageLimit}`;
+    const page = await pdf.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+
+    await page.render({ canvasContext: context, viewport }).promise;
+    const result = await window.Tesseract.recognize(canvas, 'eng');
+    const text = result?.data?.text?.trim();
+    if (text) ocrPages.push(text);
+    canvas.width = 0;
+    canvas.height = 0;
+  }
+  return ocrPages.join('\n\n').trim();
 }
 
 // ── Start Demo ──

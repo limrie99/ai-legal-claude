@@ -29,10 +29,14 @@
 ## Quick Start
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zubair-trabzada/ai-legal-claude/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/limrie99/ai-legal-claude/main/install.sh | bash
 ```
 
-That's it. One command installs all 14 skills, 5 agents, and the PDF generation scripts.
+That's it. One command installs all 15 skills, 5 agents, and the PDF generation scripts.
+
+Want to share the browser app with someone else? See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for a Render deployment guide that keeps the Anthropic API key private.
+
+[Deploy on Render](https://render.com/deploy?repo=https://github.com/limrie99/ai-legal-claude)
 
 ---
 
@@ -46,6 +50,7 @@ That's it. One command installs all 14 skills, 5 agents, and the PDF generation 
 | `/legal compare <file1> <file2>` | Side-by-side comparison of two contract versions. Flags additions, removals, and dangerous changes. |
 | `/legal plain <file>` | Translates every clause from legalese into plain English anyone can understand. |
 | `/legal negotiate <file>` | Generates specific counter-proposals with replacement language for every unfavorable clause. |
+| `/legal redline <file>` | Generates insertion-ready contract redlines with original text, replacement language, fallback positions, and cover note. |
 | `/legal missing <file>` | Finds protections that SHOULD be in the contract but aren't. |
 
 ### Document Generation
@@ -132,6 +137,7 @@ ai-legal-claude/
 │   ├── legal-compare/SKILL.md      # Contract comparison
 │   ├── legal-plain/SKILL.md        # Plain English translation
 │   ├── legal-negotiate/SKILL.md    # Counter-proposal generator
+│   ├── legal-redline/SKILL.md      # Insertion-ready redline package
 │   ├── legal-missing/SKILL.md      # Missing protections finder
 │   ├── legal-nda/SKILL.md          # NDA generator
 │   ├── legal-terms/SKILL.md        # Terms of service generator
@@ -149,7 +155,8 @@ ai-legal-claude/
 ├── scripts/
 │   └── generate_legal_pdf.py       # PDF generation (ReportLab)
 ├── templates/
-│   └── contract-review-template.md # Report template
+│   ├── contract-review-template.md # Report template
+│   └── contract-type-playbooks.md  # Contract-type review and redline playbooks
 ├── install.sh                      # One-line installer
 ├── uninstall.sh                    # Clean uninstaller
 └── README.md
@@ -168,7 +175,7 @@ ai-legal-claude/
 ## Uninstall
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zubair-trabzada/ai-legal-claude/main/uninstall.sh | bash
+curl -fsSL https://raw.githubusercontent.com/limrie99/ai-legal-claude/main/uninstall.sh | bash
 ```
 
 Or run locally:

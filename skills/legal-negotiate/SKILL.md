@@ -24,6 +24,8 @@ This skill is activated by `/legal negotiate <file>` where `<file>` is a file pa
 
 ### Step 2: Identify All Unfavorable or Risky Clauses
 
+Before prioritizing issues, consult `templates/contract-type-playbooks.md` for the closest matching contract type. Use the playbook to distinguish true dealbreakers from standard terms, identify reasonable fallback positions, and avoid over-negotiating low-risk boilerplate.
+
 Scan every clause and flag those that are:
 
 - One-sided in favor of the other party
