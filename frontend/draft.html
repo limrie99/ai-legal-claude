@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acts of Mercy International — Draft a Waiver & Figure Out Paperwork</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root { --ink:#1f2933; --muted:#5b6b7b; --line:#e3e8ee; --accent:#0b6b5a; --accent-soft:#e7f4f0; --warn-bg:#fff7e6; --warn-bd:#f0c674; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color:var(--ink); background:#f5f7f9; line-height:1.55; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px 80px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+    .brand { font-weight:700; font-size:18px; }
+    .brand small { display:block; font-weight:500; font-size:12px; color:var(--muted); }
+    .back { color:var(--accent); text-decoration:none; font-size:14px; font-weight:600; }
+    .back:hover { text-decoration:underline; }
+    .warn { background:var(--warn-bg); border:1px solid var(--warn-bd); border-radius:10px; padding:12px 14px; font-size:13px; color:#6b4e00; margin-bottom:18px; }
+    .warn strong { color:#5a4200; }
+    h1 { font-size:22px; margin:6px 0 4px; }
+    .lede { color:var(--muted); font-size:15px; margin:0 0 18px; }
+    label { font-weight:600; font-size:14px; display:block; margin-bottom:6px; }
+    textarea { width:100%; min-height:120px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:15px; resize:vertical; }
+    textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+    .hint { color:var(--muted); font-size:12.5px; margin:6px 2px 0; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+    button { font:inherit; font-weight:600; border-radius:9px; padding:11px 18px; border:1px solid transparent; cursor:pointer; }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-primary:hover { background:#095749; }
+    .btn-primary:disabled { opacity:.55; cursor:default; }
+    .btn-ghost { background:#fff; color:var(--ink); border-color:var(--line); }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+    .examples { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .chip { background:#fff; border:1px solid var(--line); border-radius:999px; padding:6px 12px; font-size:12.5px; color:var(--muted); cursor:pointer; }
+    .chip:hover { border-color:var(--accent); color:var(--accent); }
+    #status { margin-top:14px; font-size:14px; color:var(--muted); min-height:20px; }
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--accent-soft); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; vertical-align:-2px; margin-right:7px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .result-card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 26px 26px; margin-top:20px; display:none; }
+    .result-actions { display:flex; gap:10px; justify-content:flex-end; padding-top:14px; flex-wrap:wrap; }
+    .doc h1 { font-size:19px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+    .doc h2 { font-size:16px; margin-top:26px; color:var(--accent); }
+    .doc code { background:#f0f3f5; padding:1px 5px; border-radius:4px; font-size:90%; }
+    .doc ul { padding-left:22px; }
+    .doc li { margin:5px 0; }
+    .footer-note { color:var(--muted); font-size:12px; margin-top:26px; border-top:1px solid var(--line); padding-top:14px; }
+    @media print { body{background:#fff;} .topbar,.warn,form,#status,.result-actions,.footer-note,.back{display:none!important;} .result-card{border:none;padding:0;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">⚖️ Acts of Mercy International<small>Document &amp; Waiver Helper</small></div>
+      <a class="back" href="/">← Check an existing document</a>
+    </div>
+
+    <div class="warn">
+      <strong>Please read:</strong> This is an AI helper for AMI staff. It is <strong>NOT a lawyer</strong> and does
+      <strong>NOT provide legal advice</strong>. Anything it drafts is a starting point only — have it reviewed by a
+      licensed attorney in your state before anyone signs it.
+    </div>
+
+    <h1>Draft a waiver &amp; figure out your paperwork</h1>
+    <p class="lede">Describe an activity, event, or trip. You'll get a checklist of the forms AMI should have — plus a ready-to-edit draft liability waiver tailored to it.</p>
+
+    <form id="draft-form">
+      <label for="desc">What is AMI doing?</label>
+      <textarea id="desc" placeholder="e.g. A weekend youth mission trip to build homes in another state. About 20 volunteers, some are minors. Light construction work and overnight stays."></textarea>
+      <div class="hint">The more detail (who, what, where, minors involved, risks), the better the draft.</div>
+      <div class="examples" id="examples">
+        <span class="chip">Weekend youth mission trip (includes minors)</span>
+        <span class="chip">One-day community food distribution event</span>
+        <span class="chip">Adult volunteers serving at a medical clinic abroad</span>
+      </div>
+      <div class="row">
+        <button type="submit" class="btn-primary" id="go">Generate paperwork &amp; draft waiver</button>
+      </div>
+    </form>
+
+    <div id="status"></div>
+
+    <div class="result-card" id="result-card">
+      <div class="doc" id="result"></div>
+      <div class="result-actions">
+        <button class="btn-ghost" id="copy">Copy text</button>
+        <button class="btn-ghost" id="print">Print / Save PDF</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Acts of Mercy International — internal AI helper. Not a lawyer, not legal advice. AI output is for
+      informational purposes only; have a licensed attorney review anything important. No attorney–client relationship is created.
+    </div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const descEl = $('#desc'), goEl = $('#go'), statusEl = $('#status');
+    const card = $('#result-card'), resultEl = $('#result');
+    let lastMarkdown = '';
+
+    document.querySelectorAll('#examples .chip').forEach(c =>
+      c.addEventListener('click', () => { descEl.value = c.textContent; descEl.focus(); }));
+
+    $('#draft-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = descEl.value.trim();
+      if (!text) { statusEl.textContent = 'Please describe the activity first.'; return; }
+      goEl.disabled = true;
+      card.style.display = 'none';
+      statusEl.innerHTML = '<span class="spinner"></span>Thinking through the paperwork and drafting your waiver… (about 20–40 seconds)';
+      try {
+        const res = await fetch('/api/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (data.error) { statusEl.textContent = '⚠️ ' + data.error; goEl.disabled = false; return; }
+        lastMarkdown = data.markdown || '';
+        resultEl.innerHTML = marked.parse(lastMarkdown);
+        card.style.display = 'block';
+        statusEl.textContent = '';
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        statusEl.textContent = '⚠️ Something went wrong: ' + err.message;
+      } finally {
+        goEl.disabled = false;
+      }
+    });
+
+    $('#copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(lastMarkdown); $('#copy').textContent = 'Copied ✓';
+        setTimeout(() => $('#copy').textContent = 'Copy text', 1500); } catch { $('#copy').textContent = 'Copy failed'; }
+    });
+    $('#print').addEventListener('click', () => window.print());
+  </script>
+</body>
+</html>

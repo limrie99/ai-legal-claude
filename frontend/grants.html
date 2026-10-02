@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acts of Mercy International — Grant Helper</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root { --ink:#1f2933; --muted:#5b6b7b; --line:#e3e8ee; --accent:#0b6b5a; --accent-soft:#e7f4f0; --warn-bg:#fff7e6; --warn-bd:#f0c674; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:#f5f7f9; line-height:1.55; }
+    .wrap { max-width:860px; margin:0 auto; padding:24px 20px 80px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+    .brand { font-weight:700; font-size:18px; }
+    .brand small { display:block; font-weight:500; font-size:12px; color:var(--muted); }
+    .back { color:var(--accent); text-decoration:none; font-size:14px; font-weight:600; }
+    .back:hover { text-decoration:underline; }
+    .warn { background:var(--warn-bg); border:1px solid var(--warn-bd); border-radius:10px; padding:12px 14px; font-size:13px; color:#6b4e00; margin-bottom:18px; }
+    h1 { font-size:22px; margin:6px 0 4px; }
+    .lede { color:var(--muted); font-size:15px; margin:0 0 18px; }
+    .tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .tab { background:#fff; border:1px solid var(--line); border-radius:9px; padding:10px 16px; font-weight:600; font-size:14px; cursor:pointer; color:var(--muted); }
+    .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    label { font-weight:600; font-size:14px; display:block; margin-bottom:6px; }
+    textarea { width:100%; min-height:130px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; font:inherit; font-size:15px; resize:vertical; }
+    textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+    .hint { color:var(--muted); font-size:12.5px; margin:6px 2px 0; }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:14px; }
+    button.go { font:inherit; font-weight:600; border-radius:9px; padding:11px 18px; border:1px solid transparent; cursor:pointer; background:var(--accent); color:#fff; }
+    button.go:hover { background:#095749; }
+    button.go:disabled { opacity:.55; cursor:default; }
+    .btn-ghost { font:inherit; font-weight:600; border-radius:9px; padding:11px 18px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+    .btn-ghost:hover { border-color:var(--accent); color:var(--accent); }
+    #status { margin-top:14px; font-size:14px; color:var(--muted); min-height:20px; }
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--accent-soft); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; vertical-align:-2px; margin-right:7px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .result-card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 26px 26px; margin-top:20px; display:none; }
+    .result-actions { display:flex; gap:10px; justify-content:flex-end; padding-top:14px; flex-wrap:wrap; }
+    .doc h1 { font-size:19px; border-bottom:1px solid var(--line); padding-bottom:8px; }
+    .doc h2 { font-size:16px; margin-top:24px; color:var(--accent); }
+    .doc table { border-collapse:collapse; width:100%; margin:10px 0; }
+    .doc th,.doc td { border:1px solid var(--line); padding:6px 10px; text-align:left; font-size:14px; }
+    .doc code { background:#f0f3f5; padding:1px 5px; border-radius:4px; font-size:90%; }
+    .footer-note { color:var(--muted); font-size:12px; margin-top:26px; border-top:1px solid var(--line); padding-top:14px; }
+    .found { background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 22px; margin:0 0 22px; }
+    .found-head { display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .found-head h2 { font-size:17px; color:var(--accent); }
+    .found-date { font-size:12px; color:var(--muted); }
+    .found-note { font-size:13px; color:var(--muted); margin:6px 0 4px; }
+    .found-note a { color:var(--accent); }
+    .tier { margin:15px 0 6px; }
+    .pill { font-size:12.5px; font-weight:700; padding:4px 11px; border-radius:999px; }
+    .go-pill{ background:#e7f4f0; color:#0b6b5a; } .watch-pill{ background:#fff7e6; color:#8a6400; }
+    .skip-pill{ background:#fdeaea; color:#a23b3b; } .db-pill{ background:#eef2f7; color:#41566b; }
+    .glist { margin:6px 0 4px; padding-left:20px; } .glist li { margin:7px 0; font-size:14px; }
+    .glist a { color:var(--accent); font-weight:600; text-decoration:none; } .glist a:hover { text-decoration:underline; }
+    .draft-cta { display:inline-block; margin-top:14px; padding:12px 20px; border-radius:9px; background:var(--accent); color:#fff; border:none; text-decoration:none; font-weight:600; font-size:14.5px; cursor:pointer; }
+    .draft-cta:hover { background:#095749; }
+    .emma-note { background:var(--accent-soft); border-left:3px solid var(--accent); border-radius:8px; padding:10px 14px; font-size:13.5px; color:#234; margin:12px 0 4px; line-height:1.5; }
+    @media print { body{background:#fff;} .topbar,.warn,.tabs,form,#status,.result-actions,.footer-note,.back,.draft-cta{display:none!important;} .result-card{border:none;padding:0;} }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">🎯 Acts of Mercy International<small>Grant Helper</small></div>
+      <div><a class="back" href="/disasters.html">🌪️ Disaster Watch</a> &nbsp;·&nbsp; <a class="back" href="/">← Document tools</a></div>
+    </div>
+
+    <div class="warn">
+      <strong>Please read:</strong> This is an AI helper for AMI staff. It is <strong>NOT</strong> a professional grant writer,
+      lawyer, or accountant, and does <strong>NOT</strong> provide professional, legal, or financial advice. Everything here
+      is a starting point — review it, fill in real numbers, and <strong>verify every funder's rules and deadlines yourself</strong> before submitting.
+    </div>
+
+    <h1>Grant helper</h1>
+    <p class="lede">Draft a grant proposal, get a candid review of one you've written, or find funding. <strong>Real opportunities we've already found for AMI are listed right below</strong> — the tools are further down.</p>
+
+    <!-- ===== Curated list found for AMI ===== -->
+    <div class="found">
+      <div class="found-head">
+        <h2 style="margin:0;">📋 Grants found for Acts of Mercy International</h2>
+        <span class="found-date">Reviewed Jun 17, 2026 · verify each on the funder's own site before applying</span>
+      </div>
+      <p class="found-note">Matched to AMI's profile: U.S. 501(c)(3), faith-based <em>international</em> disaster relief, development & missions (Waco, TX / Antioch Movement).</p>
+
+      <div class="emma-note">
+        <strong>How to use this, Emma:</strong> 🟢 = ready to apply now (start here) · 🟡 = real, but needs timing or a warm intro · 🔴 = already checked, not eligible (skip).
+        Click any funder name to open its page. When you're ready, hit <strong>“✍️ Draft a grant proposal for AMI”</strong> at the bottom and the tool writes a full draft for you — see the sample below for what that looks like.
+      </div>
+
+      <div class="tier"><span class="pill go-pill">🟢 Apply now / rolling — best fits</span></div>
+      <ul class="glist">
+        <li><a href="https://www.instrumentl.com/grants" target="_blank">Semnani Family Foundation</a> — <b>Rolling</b> · international health, education &amp; <b>disaster relief</b> (Afghanistan/India/S. Africa). Squarely AMI's work.</li>
+        <li><a href="https://www.instrumentl.com/browse-grants/grants-for-international-development" target="_blank">Gupta Family Foundation</a> — <b>$5K–$250K+</b> · due <b>Aug 31, 2026</b> · U.S. 501(c)(3)s operating internationally (India, Kenya). Exact profile match.</li>
+        <li><a href="https://www.instrumentl.com/browse-grants/faith-based-grants" target="_blank">Parkinson Family Foundation</a> — up to <b>$5,000</b> · <b>Rolling</b> · funds “Food &amp; Water, Faith &amp; Evangelism, Health &amp; Humanitarian.” Perfect theme overlap.</li>
+        <li><a href="https://www.instrumentl.com/browse-grants/grants-for-international-development" target="_blank">Draper Richards Kaplan Foundation</a> — up to <b>$300K over 3 yrs</b> · <b>Rolling</b> · backs scalable relief/social models — pitch AMI's disaster-response model.</li>
+      </ul>
+
+      <div class="tier"><span class="pill watch-pill">🟡 Watch / timing or relationship</span></div>
+      <ul class="glist">
+        <li><a href="https://www.ajafoundation.org/how-to-apply/" target="_blank">AJA Foundation</a> — <b>$2,500–$500K</b> · clean water (incl. rural Africa), no geographic limit · <b>invitations currently PAUSED — check back later in 2026.</b> Ideal for AMI's water wells.</li>
+        <li><a href="https://lillyendowment.org/" target="_blank">Lilly Endowment</a> — “Hope After the Storm” faith-based <b>disaster relief, $500K–$5M</b> · <b>invitation-only</b> (get on their radar); general Religion grants are rolling.</li>
+        <li>True Inspiration Awards (Chick-fil-A Foundation) — <b>$30K–$350K</b> · due <b>May 1, 2027</b> · humanitarian / food-security focus.</li>
+        <li><a href="https://maclellan.net/" target="_blank">Maclellan Foundation</a> — best thematic match (intl. church planting, community transformation) but <b>no unsolicited proposals</b> — needs a warm intro.</li>
+        <li><a href="https://www.ncfgiving.com/" target="_blank">National Christian Foundation</a> — set AMI up here so Christian donors can route donor-advised-fund gifts to you.</li>
+      </ul>
+
+      <div class="tier"><span class="pill skip-pill">🔴 Checked — not eligible</span></div>
+      <p class="found-note">American Water Foundation &amp; USDA Rural Water (U.S.-only/domestic wells) · Kingdom Missions Fund (excludes international missions).</p>
+
+      <div class="tier"><span class="pill db-pill">🔎 Keep searching</span></div>
+      <p class="found-note"><a href="https://www.instrumentl.com/browse-grants/faith-based-grants" target="_blank">Instrumentl</a> · <a href="https://usa.grantwatch.com/cat/11/faith-based-grants.html" target="_blank">GrantWatch (faith-based)</a> · <a href="https://candid.org" target="_blank">Candid / Foundation Directory</a> · <a href="https://www2.fundsforngos.org/category/humanitarian-relief/" target="_blank">fundsforNGOs</a> — or use the <b>🧭 Find grants</b> tool below for a fresh live search.</p>
+
+      <button class="draft-cta" id="draft-for-ami">✍️ Draft a grant proposal for AMI →</button>
+    </div>
+    <!-- ===== /Curated list ===== -->
+
+    <!-- ===== Sample proposal (worked example for Emma) ===== -->
+    <details class="sample-wrap" style="margin:0 0 22px;">
+      <summary style="cursor:pointer;font-weight:700;color:var(--accent);font-size:15px;padding:8px 0;">📄 Sample: what the “Draft a proposal” tool writes (it asks for your data first, then drafts the grant)</summary>
+      <div class="result-card" style="display:block;margin-top:12px;"><div class="doc" id="sample-out"></div></div>
+      <script type="text/markdown" id="sample-md">*Not professional advice — review & verify before submitting.*
+
+---
+
+## 📋 Information I need from you (to make this submission-ready)
+
+- **EIN & date of 501(c)(3) determination** — needed for the cover sheet and funder's due-diligence checklist
+- **Last fiscal year's total revenue and total expenses** — funders expect financial health indicators
+- **Number of people AMI served last year (total, all programs)** — establishes organizational credibility and scale
+- **Exact project budget broken into line items** — e.g., per-well drilling cost, equipment, training materials, staff/consultant time, travel, overhead; and the **total grant request amount**
+- **Names of the 5 specific rural communities and the country/region** — critical for specificity; generic proposals are rejected
+- **Named local church partners on the ground** — who exactly will be trained; one-line description of each if possible
+- **Key staff and leadership names + one-line bios** — Project lead, Executive Director, and any field coordinator
+- **Measurable baseline data for those communities** — current water access rate, average distance to water source, waterborne illness rates if available [VERIFY against WHO/UNICEF or local health ministry data]
+- **Gupta Family Foundation's exact program/grant cycle name, stated priorities, and submission deadline** — their public materials should confirm whether WASH (Water, Sanitation & Hygiene), faith-based work, or community capacity-building are explicitly prioritized
+- **Previous AMI water/WASH project results** — any prior wells drilled, communities served, outcomes documented (makes the strongest case)
+
+Reply with these (or fill the [brackets] below) and I'll turn this into a submission-ready draft.
+
+---
+
+## Organization Summary
+
+Acts of Mercy International (AMI) is a U.S.-based 501(c)(3) humanitarian nonprofit headquartered in Waco, Texas (EIN: [EIN]; 501(c)(3) determination date: [DATE]). Founded as the relief and development arm of the Antioch Movement — a global church-planting network — AMI operates at the intersection of spiritual and physical flourishing, partnering with local churches to deliver sustainable, community-owned humanitarian solutions in some of the world's most underserved regions. Under the leadership of [EXECUTIVE DIRECTOR NAME AND TITLE], AMI served [TOTAL PEOPLE SERVED LAST YEAR] individuals across [NUMBER] countries in [LAST FISCAL YEAR], with a total operating budget of [TOTAL REVENUE] and expenses of [TOTAL EXPENSES].
+
+AMI's model is distinctive: rather than building dependency on outside organizations, we train and equip indigenous church leaders to become long-term stewards of community development. Our track record in [RELEVANT PROGRAM AREAS OR PRIOR WASH WORK, e.g., previous wells drilled, communities served] demonstrates that faith-rooted, locally led development produces durable, measurable change.
+
+---
+
+## Statement of Need
+
+Across [COUNTRY/REGION], access to safe drinking water remains one of the most acute humanitarian crises of our time. In the rural communities targeted by this project — [COMMUNITY 1], [COMMUNITY 2], [COMMUNITY 3], [COMMUNITY 4], and [COMMUNITY 5] — approximately **3,000 people** currently lack reliable access to clean water within a reasonable distance of their homes.
+
+The consequences are severe and well-documented:
+
+- **Disease burden:** Waterborne illnesses — including cholera, typhoid, and diarrheal diseases — are leading causes of preventable death in rural [REGION]. Globally, unsafe water causes an estimated 485,000 diarrheal deaths per year [VERIFY: WHO, 2023]. In [SPECIFIC DISTRICT/REGION], the reported incidence of waterborne illness is [LOCAL STATISTIC — VERIFY with local health ministry or WHO country data].
+- **Women and children carry the heaviest load:** In these communities, women and girls walk an average of [DISTANCE — VERIFY] to collect water, consuming hours each day that could be spent in school, in economic activity, or in community life. This cycle of time poverty perpetuates gender inequality and limits educational attainment.
+- **Economic impact:** Illness from unsafe water reduces productive labor capacity and drives families into medical debt. A household in [REGION] earning [AVERAGE INCOME — VERIFY] cannot absorb the cost of repeated illness without lasting economic harm.
+- **No sustainable local infrastructure:** Existing water sources in these communities — open wells, seasonal streams, and surface ponds — are unprotected, frequently contaminated, and entirely unmaintained. There is no trained local capacity to construct or sustain safer alternatives.
+
+AMI's local church partners are already present in each of these five communities, trusted by residents and embedded in their daily lives. They have identified clean water as the single highest-priority need voiced by community members themselves. This project meets that need directly — and builds the local human infrastructure to sustain it.
+
+---
+
+## Project Description — Goals & Objectives
+
+**Project Title:** Living Water Initiative — [COUNTRY/REGION] Rural WASH Project
+**Project Period:** 12 months ([START DATE] – [END DATE])
+**Total Grant Request:** [GRANT AMOUNT REQUESTED]
+**Target Beneficiaries:** ~3,000 individuals across 5 rural communities
+
+**Goal:** To provide sustainable access to safe drinking water for 3,000 people in 5 rural communities in [REGION], and to build lasting local maintenance capacity through church-based training.
+
+**Objectives:**
+
+1. **Drill and commission 5 functional clean-water wells** — one in each target community — using proven borehole/[DRILLING METHOD] technology appropriate to local geology, by [MONTH/YEAR].
+2. **Train [NUMBER] local church leaders and community members** per community (totaling [TOTAL TRAINEES]) in well operation, basic maintenance, water quality monitoring, and minor repair, so that each well has a locally capable maintenance team upon handoff.
+3. **Establish a community-led Water Management Committee** in each of the 5 communities, with written protocols for fee collection, repair fund management, and escalation procedures, by [MONTH/YEAR].
+4. **Reduce reported waterborne illness** in target communities by [TARGET %] within 12 months of well commissioning, as tracked through community health records and partner church reporting.
+5. **Achieve a beneficiary satisfaction rate of [TARGET %, e.g., 90%+]** as measured by post-project household surveys administered by local church partners.
+
+---
+
+## Activities & Timeline
+
+| Month(s) | Activity | Responsible Party |
+|---|---|---|
+| 1–2 | Project launch: partner church orientation, community needs assessments, site surveys and geological assessments for all 5 well locations | AMI Field Coordinator + [LOCAL PARTNER NAME] |
+| 2–3 | Procurement of drilling equipment and materials; mobilization of licensed drilling contractor | AMI Waco HQ + [LOCAL PARTNER / CONTRACTOR NAME] |
+| 3–6 | Drilling and installation of 5 boreholes; pump installation; water quality testing at each site | Licensed Drilling Contractor + AMI Field Coordinator |
+| 4–6 | Training of [NUMBER] church leaders and community members per site in operation, maintenance, and water quality monitoring | AMI Field Coordinator + [TRAINER/PARTNER NAME] |
+| 5–6 | Formation of Water Management Committees; establishment of community maintenance fund structures and governance protocols | Local Church Partners + AMI Field Coordinator |
+| 6 | Formal community commissioning ceremonies; handoff of wells to community ownership | AMI + Local Church Partners |
+| 6–11 | Quarterly monitoring visits by AMI field coordinator; remote check-ins with church partners; troubleshooting and follow-up training as needed | AMI Field Coordinator |
+| 10–12 | Beneficiary household surveys; data compilation; waterborne illness tracking; partner reporting | Local Church Partners + AMI |
+| 12 | Final project evaluation; funder impact report submitted | AMI Waco HQ |
+
+---
+
+## Outcomes & How We'll Measure Them
+
+AMI is committed to outcomes that are specific, measurable, and honestly reported.
+
+| Outcome | Target | Measurement Method | Timeline |
+|---|---|---|---|
+| Clean water access | 3,000 individuals gain access to a functional, safe well within [DISTANCE, e.g., 500 meters] of home | Well commissioning records; beneficiary head-count per community | Month 6 |
+| Trained local maintainers | [TOTAL #] community members certified in well O&M | Training attendance and skills-assessment records | Month 6 |
+| Water Management Committees | 5 functional committees established with written governance documents | Committee charter documentation; AMI field coordinator verification | Month 6 |
+| Reduction in waterborne illness | [TARGET %, e.g., 30%] reduction in reported cases in target communities | Church partner health tracking; comparison to [BASELINE FIGURE — VERIFY] | Month 12 |
+| Well functionality at 12 months | 5 of 5 wells operational at project close | Field coordinator inspection report | Month 12 |
+| Beneficiary satisfaction | [TARGET %, e.g., ≥90%] of surveyed households report improved water access and quality | Structured household survey (n = [SAMPLE SIZE]) administered by local church partners | Month 12 |
+
+**Data collection:** AMI's field coordinator will conduct in-person monitoring visits at months [3, 6, 9, and 12]. Local church partners will submit monthly written reports. All data will be compiled into a final impact report delivered to the Gupta Family Foundation within 30 days of project close.
+
+---
+
+## Budget Outline
+
+*All figures in USD. [AMOUNTS] to be confirmed with drilling contractor quotes and field partner inputs prior to submission.*
+
+| Line Item | Description | Amount |
+|---|---|---|
+| Well Drilling & Installation | Borehole drilling, casing, pump installation × 5 wells | [AMOUNT] |
+| Water Quality Testing | Laboratory testing at each site, pre- and post-drilling | [AMOUNT] |
+| Equipment & Materials | Hand tools, spare parts kit, and storage per community × 5 | [AMOUNT] |
+| Training Program | Curriculum development, training materials, facilitator fees × 5 communities | [AMOUNT] |
+| Community Training Events | Venue, transportation, meals for trainees × 5 sites | [AMOUNT] |
+| Water Management Committee Setup | Governance document printing, fee-box procurement × 5 | [AMOUNT] |
+| AMI Field Coordinator (12 months) | Salary/stipend, housing, in-country travel | [AMOUNT] |
+| Monitoring & Evaluation | Quarterly site visits, household surveys, data tools | [AMOUNT] |
+| Communications & Reporting | Photos, documentation, final funder report production | [AMOUNT] |
+| AMI Administrative / Indirect Costs | [STATE %] of direct costs | [AMOUNT] |
+| **TOTAL PROJECT BUDGET** | | **[TOTAL AMOUNT]** |
+| **Amount Requested from Gupta Family Foundation** | | **[GRANT REQUEST]** |
+| **Other Confirmed/Pending Funding** | [OTHER FUNDERS, IF ANY] | **[AMOUNT]** |
+
+---
+
+## Sustainability & Future Funding
+
+AMI designs every project for the day we leave. Sustainability is not an afterthought — it is the architecture of the work.
+
+**Community ownership from day one:** Each well is formally handed to the community, not to AMI. The Water Management Committee, trained and operational before handoff, holds legal and moral stewardship of the asset. Community members set and collect nominal user fees that accumulate in a dedicated repair fund, reducing reliance on any outside organization for routine maintenance.
+
+**Church partner integration:** AMI's local church partners are permanent fixtures in these communities — they do not rotate out on a project cycle. Their ongoing presence means that well monitoring, early problem identification, and community accountability continue indefinitely at no additional cost to AMI or to the Gupta Family Foundation.
+
+**Technical training for independence:** The [TOTAL #] trained maintainers per community are equipped to handle routine repairs using locally available parts. AMI will establish a regional supply-chain contact for pump parts so communities know exactly where to source replacement components at fair prices.
+
+**Long-term AMI engagement:** AMI's broader partnership with the Antioch Movement in [REGION] ensures that field coordinators and church partners will continue to visit these communities as part of ongoing ministry and development activity — providing a natural accountability mechanism well beyond the 12-month grant period.
+
+**Future funding:** AMI will pursue continued funding for [REGION] WASH expansion through [LIST OTHER FUNDERS BEING APPROACHED OR ALREADY ENGAGED, e.g., USAID small grants, other family foundations, individual major donors]. The documented outcomes from this Gupta-funded project will serve as the evidence base for that next phase, which we project will reach an additional [TARGET #] communities in year two.
+
+---
+
+## Closing
+
+Clean water is not a complex problem. The technology exists. The community will exists. What has been missing — in [COMMUNITY 1], [COMMUNITY 2], [COMMUNITY 3], [COMMUNITY 4], and [COMMUNITY 5] — is the combination of trusted local relationships, technical capacity, and catalytic capital to make it real.
+
+Acts of Mercy International brings the relationships and the model. The Gupta Family Foundation's investment provides the catalyst.
+
+For [GRANT AMOUNT], this project will deliver safe water to 3,000 people, train a generation of local stewards to maintain it, and establish a replicable model that AMI and its church partners can carry to additional communities in the years ahead. Every dollar is accountable, every outcome is measurable, and every well belongs — permanently — to the people who drink from it.
+
+We are grateful for the Gupta Family Foundation's commitment to [REFERENCE FUNDER'S STATED PRIORITY LANGUAGE FROM THEIR GUIDELINES], and we believe this project is a direct expression of that commitment in [REGION]. We welcome the opportunity to discuss this proposal further and to provide any additional documentation the Foundation requires.
+
+**Contact:**
+[EXECUTIVE DIRECTOR OR PROJECT LEAD NAME]
+[TITLE]
+Acts of Mercy International
+[ADDRESS, WACO TX]
+[PHONE] | [EMAIL]
+[WEBSITE]
+
+---
+
+*Not professional advice — AMI staff must review all statistics, budget figures, partner details, and funder-specific language before submission.*</script>
+    </details>
+    <!-- ===== /Sample proposal ===== -->
+
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-mode="write">✍️ Write a proposal</button>
+      <button class="tab" data-mode="check">🔎 Check my draft</button>
+      <button class="tab" data-mode="find">🧭 Find grants</button>
+    </div>
+
+    <form id="grant-form">
+      <label id="lbl" for="desc">Describe your program / project</label>
+      <textarea id="desc"></textarea>
+      <div class="hint" id="hint"></div>
+      <div class="row">
+        <button type="submit" class="go" id="go">Generate</button>
+      </div>
+    </form>
+
+    <div id="status"></div>
+
+    <div class="result-card" id="result-card">
+      <div class="doc" id="result"></div>
+      <div class="result-actions">
+        <button class="btn-ghost" id="copy">Copy text</button>
+        <button class="btn-ghost" id="print">Print / Save PDF</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      Acts of Mercy International — internal AI helper. Not professional, legal, or financial advice. AI output is for
+      informational purposes only; verify all funder requirements, deadlines, and figures before submitting any application.
+    </div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    let mode = 'write', lastMarkdown = '';
+    const COPY = {
+      write: { label:'Describe your program / project (and the funder, if you know it)',
+        ph:"e.g. A clean-water project drilling 5 wells in rural [country], serving ~3,000 people over 12 months. Applying to a family foundation focused on global health.",
+        hint:'Include the need, who it helps, rough timeline, and the funder if you have one.', btn:'Draft my proposal' },
+      check: { label:'Paste your grant application / proposal draft',
+        ph:'Paste the full text of the grant draft you want reviewed…',
+        hint:"It'll flag what's strong, what's missing, and how to strengthen it.", btn:'Review my draft' },
+      find:  { label:"Describe AMI's mission, main programs, and where you operate",
+        ph:'e.g. Faith-based humanitarian nonprofit based in [state]. We run mission trips, disaster relief, and clean-water projects, mostly internationally. 501(c)(3).',
+        hint:'It suggests TYPES of funders and how to search — always verify current grants yourself.', btn:'Show me where to look' }
+    };
+    function applyMode() {
+      const c = COPY[mode];
+      $('#lbl').textContent = c.label; $('#desc').placeholder = c.ph; $('#hint').textContent = c.hint; $('#go').textContent = c.btn;
+      document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+    }
+    document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => { mode = t.dataset.mode; applyMode(); }));
+    applyMode();
+
+    // "Draft a grant proposal for AMI" — jump to Write tab, pre-fill AMI's profile
+    const draftBtn = document.querySelector('#draft-for-ami');
+    if (draftBtn) draftBtn.addEventListener('click', () => {
+      mode = 'write'; applyMode();
+      $('#desc').value = "Acts of Mercy International — a U.S. 501(c)(3) faith-based humanitarian nonprofit based in Waco, TX, the relief & development arm of the Antioch Movement. We mobilize the Church to respond to disasters and bring sustainable transformation: international disaster relief, community development, clean-water projects, and missions/church planting. PROJECT TO FUND: [describe the specific project — e.g., clean-water wells, a disaster response, a community program]. APPLYING TO: [funder name, if known — e.g., one of the grants listed above].";
+      document.querySelector('#grant-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      $('#desc').focus();
+    });
+
+    $('#grant-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = $('#desc').value.trim();
+      if (!text) { $('#status').textContent = 'Please fill in the box first.'; return; }
+      $('#go').disabled = true; $('#result-card').style.display = 'none';
+      const wait = mode === 'find'
+        ? 'Searching the live web for real grants — this takes 1–3 minutes, hang tight…'
+        : 'Working on it… (about 20–40 seconds)';
+      $('#status').innerHTML = '<span class="spinner"></span>' + wait;
+      try {
+        const res = await fetch('/api/grant', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ mode, text }) });
+        const data = await res.json();
+        if (data.error) { $('#status').textContent = '⚠️ ' + data.error; return; }
+        lastMarkdown = data.markdown || '';
+        $('#result').innerHTML = marked.parse(lastMarkdown);
+        $('#result-card').style.display = 'block'; $('#status').textContent = '';
+        $('#result-card').scrollIntoView({ behavior:'smooth', block:'start' });
+      } catch (err) { $('#status').textContent = '⚠️ Something went wrong: ' + err.message; }
+      finally { $('#go').disabled = false; }
+    });
+    $('#copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(lastMarkdown); $('#copy').textContent='Copied ✓'; setTimeout(()=>$('#copy').textContent='Copy text',1500); } catch { $('#copy').textContent='Copy failed'; }
+    });
+    $('#print').addEventListener('click', () => window.print());
+  
+    // render the embedded sample proposal
+    const _sm = document.getElementById('sample-md');
+    if (_sm) document.getElementById('sample-out').innerHTML = marked.parse(_sm.textContent);
+</script>
+</body>
+</html>

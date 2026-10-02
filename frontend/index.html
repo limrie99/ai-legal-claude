@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Legal Assistant — Agent Observer</title>
+  <title>Acts of Mercy International — Document &amp; Waiver Helper</title>
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -13,10 +13,10 @@
     <div class="disclaimer-content">
       <span class="disclaimer-icon">&#9888;</span>
       <span class="disclaimer-text">
-        <strong>Legal Disclaimer:</strong> This tool is AI-powered and does <strong>not</strong> provide legal advice.
-        It is not a lawyer, law firm, or substitute for an attorney. All analysis is for informational and educational
-        purposes only. Always consult a licensed attorney before signing any contract or making legal decisions.
-        No attorney-client relationship is created by using this tool. Results may be inaccurate or incomplete.
+        <strong>Please read:</strong> This is an AI helper for Acts of Mercy International staff. It is <strong>NOT a lawyer</strong>,
+        not a law firm, and does <strong>NOT provide legal advice</strong>. Everything it produces — including any draft waiver or
+        checklist — is for informational purposes only and may be inaccurate or incomplete. Before you rely on any document or
+        waiver, have it reviewed by a licensed attorney in your state. Using this tool creates no attorney–client relationship.
       </span>
       <button class="disclaimer-close" id="disclaimer-close" title="Dismiss">&times;</button>
     </div>
@@ -29,13 +29,13 @@
   <aside id="sidebar">
     <div class="sidebar-header">
       <span class="logo-icon">&#9878;</span>
-      <span class="logo-text">Legal Observer</span>
+      <span class="logo-text">AMI Document Helper</span>
     </div>
 
     <div class="sidebar-section">
-      <div class="section-label">CONTRACT</div>
+      <div class="section-label">DOCUMENT</div>
       <div id="contract-info" class="contract-card">
-        <div class="contract-name">No contract loaded</div>
+        <div class="contract-name">No document loaded</div>
         <div class="contract-meta"></div>
       </div>
     </div>
@@ -64,7 +64,7 @@
     <div class="sidebar-section sidebar-disclaimer">
       <div class="disclaimer-mini">
         <span class="disclaimer-mini-icon">&#9878;</span>
-        Not a lawyer. Not legal advice. Always consult a licensed attorney before signing.
+        Not a lawyer. Not legal advice. Have a licensed attorney review anything important.
       </div>
     </div>
 
@@ -142,30 +142,42 @@
     <div class="event-stream" id="event-stream">
       <div class="event-empty" id="event-empty">
         <div class="empty-icon">&#9878;</div>
-        <div class="empty-title">AI Legal Assistant</div>
-        <div class="empty-tagline">Every contract has hidden risks. This tool finds them in 60 seconds.</div>
+        <div class="empty-title">Acts of Mercy International — Waiver &amp; Document Helper</div>
+        <div class="empty-tagline">Check a liability waiver, release, or consent form — and see what protections it's missing — in about a minute.</div>
 
-        <!-- Why This Matters Stats -->
+        <!-- What this helps with -->
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-value">$300–$500</div>
-            <div class="stat-label">Avg. legal review cost <em>per hour</em></div>
+            <div class="stat-value">Waivers</div>
+            <div class="stat-label">Liability releases &amp; assumption-of-risk forms</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">82%</div>
-            <div class="stat-label">Freelancers who don't read contracts before signing</div>
+            <div class="stat-value">Consents</div>
+            <div class="stat-label">Minor, medical/emergency &amp; photo/media releases</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">$10,000+</div>
-            <div class="stat-label">Cost of one bad clause</div>
+            <div class="stat-value">Gaps</div>
+            <div class="stat-label">Flags protections your document is missing</div>
           </div>
           <div class="stat-card">
             <div class="stat-value">&lt; 60s</div>
-            <div class="stat-label">Time to review with this tool</div>
+            <div class="stat-label">Time to check a document</div>
           </div>
         </div>
 
-        <div class="empty-subtitle">Upload a contract to begin analysis</div>
+        <div style="margin:18px auto 6px;text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a href="/draft.html" style="display:inline-block;padding:11px 18px;border-radius:9px;background:#0b6b5a;color:#fff;text-decoration:none;font-weight:600;font-size:14px;">
+            ✍️ Draft a waiver &amp; figure out paperwork →
+          </a>
+          <a href="/grants.html" style="display:inline-block;padding:11px 18px;border-radius:9px;background:#0b6b5a;color:#fff;text-decoration:none;font-weight:600;font-size:14px;">
+            🎯 Grant helper →
+          </a>
+          <a href="/disasters.html" style="display:inline-block;padding:11px 18px;border-radius:9px;background:#0b6b5a;color:#fff;text-decoration:none;font-weight:600;font-size:14px;">
+            🌪️ Disaster Watch →
+          </a>
+        </div>
+
+        <div class="empty-subtitle">— or check an existing document below —</div>
 
         <!-- Upload Zone -->
         <div class="upload-zone" id="upload-zone">
@@ -177,16 +189,16 @@
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
           </div>
-          <div class="upload-text">Drag & drop your contract here</div>
+          <div class="upload-text">Drag & drop your waiver or document here</div>
           <div class="upload-hint">or <button class="upload-browse-btn" id="btn-browse">browse files</button></div>
           <div class="upload-formats">.pdf, .txt, .md, .doc, .docx</div>
         </div>
 
         <!-- Paste Area -->
         <div class="paste-section">
-          <div class="paste-divider"><span>or paste contract text</span></div>
+          <div class="paste-divider"><span>or paste document text</span></div>
           <div class="paste-area-wrap">
-            <textarea id="paste-area" class="paste-area" placeholder="Paste your contract text here..." rows="4"></textarea>
+            <textarea id="paste-area" class="paste-area" placeholder="Paste your waiver, release, consent form, or agreement text here..." rows="4"></textarea>
             <button class="btn-secondary" id="btn-paste-analyze" disabled>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Analyze
@@ -199,9 +211,9 @@
           <div class="paste-divider"><span>or try the demo</span></div>
           <button class="btn-ghost" id="btn-demo">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            Run Demo with Sample Contract
+            See an Example Review
           </button>
-          <div class="empty-hint">Nexus Digital Solutions LLC — Independent Contractor Agreement</div>
+          <div class="empty-hint">Sample document — shows how a review looks (not an AMI document)</div>
         </div>
 
         <!-- Upload progress (hidden by default) -->
@@ -229,8 +241,8 @@
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
-    This tool does not provide legal advice and is not a substitute for a licensed attorney.
-    All analysis is AI-generated for informational purposes only. No attorney-client relationship is created.
+    Acts of Mercy International — internal AI helper. This is NOT a lawyer and does NOT provide legal advice.
+    All output is AI-generated for informational purposes only; have a licensed attorney review anything important. No attorney–client relationship is created.
   </div>
 
   <script type="module" src="js/app.js"></script>

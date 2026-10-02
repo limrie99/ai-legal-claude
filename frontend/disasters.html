@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acts of Mercy International — Disaster Watch</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <style>
+    :root { --ink:#1f2933; --muted:#516274; --line:#e3e8ee; --accent:#0b6b5a; --accent-soft:#e7f4f0;
+      --red:#a23b3b; --red-bg:#fdeaea; --orange:#8a6400; --orange-bg:#fff7e6; --green:#0b6b5a; --green-bg:#e7f4f0;
+      --card:#fff; --bg:#f5f7f9; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; }
+    .wrap { max-width:1080px; margin:0 auto; padding:22px 20px 90px; }
+    a { color:var(--accent); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+    .brand { font-weight:700; font-size:19px; } .brand small { display:block; font-weight:500; font-size:12.5px; color:var(--muted); }
+    .navlinks a { font-size:14px; font-weight:600; text-decoration:none; margin-left:14px; }
+    .navlinks a:hover { text-decoration:underline; }
+    h1 { font-size:23px; margin:6px 0 2px; }
+    .lede { color:var(--muted); font-size:15px; margin:0 0 8px; max-width:760px; }
+    .warn { background:var(--orange-bg); border:1px solid #f0c674; border-radius:10px; padding:10px 13px; font-size:13px; color:#6b4e00; margin:12px 0 18px; }
+    .asof { display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-bottom:16px; }
+    button.rf { font:inherit; font-weight:600; font-size:13px; border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:8px; padding:7px 13px; cursor:pointer; }
+    button.rf:hover { border-color:var(--accent); color:var(--accent); }
+    button.rf:disabled { opacity:.5; cursor:default; }
+
+    /* KPI strip */
+    .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr)); gap:12px; margin-bottom:22px; }
+    .kpi { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+    .kpi .n { font-size:26px; font-weight:800; line-height:1.15; }
+    .kpi .n.txt { font-size:15px; font-weight:700; line-height:1.3; }
+    .kpi .l { font-size:12.5px; color:var(--muted); margin-top:3px; }
+    .kpi.red .n{ color:var(--red);} .kpi.orange .n{ color:var(--orange);} .kpi.accent .n{ color:var(--accent);}
+
+    .section { margin:26px 0 10px; }
+    .section h2 { font-size:17px; margin:0 0 3px; display:flex; align-items:center; gap:8px; }
+    .section .sub { font-size:13px; color:var(--muted); margin:0 0 14px; }
+
+    /* Season card */
+    .season { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; }
+    .season-out { font-size:15px; } .season-out b{ text-transform:capitalize; }
+    .season-nums { display:flex; gap:20px; flex-wrap:wrap; margin:12px 0 4px; }
+    .season-nums div span { display:block; font-size:20px; font-weight:800; color:var(--accent); }
+    .season-nums div small { font-size:12px; color:var(--muted); }
+    .prob { margin-top:14px; }
+    .prob-bar { display:flex; height:12px; border-radius:7px; overflow:hidden; border:1px solid var(--line); }
+    .prob-bar i { display:block; } .prob-bar .b{ background:#8fb3ab;} .prob-bar .n{ background:#dbe6e3;} .prob-bar .a{ background:#f0c674;}
+    .prob-key { font-size:12px; color:var(--muted); margin-top:5px; display:flex; gap:14px; flex-wrap:wrap; }
+    .track { position:relative; height:10px; background:#eef2f4; border-radius:6px; margin:16px 0 6px; }
+    .track .done { position:absolute; left:0; top:0; bottom:0; background:var(--accent); border-radius:6px; opacity:.75; }
+    .track .peak { position:absolute; top:-5px; width:2px; height:20px; background:var(--red); }
+    .track-key { font-size:12px; color:var(--muted); display:flex; justify-content:space-between; }
+
+    /* formation */
+    .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr)); gap:12px; }
+    .form-card { background:var(--card); border:1px solid var(--line); border-left-width:4px; border-radius:12px; padding:14px 16px; }
+    .form-card.none{ border-left-color:#9fb3ab;} .form-card.low{ border-left-color:#6fae55;} .form-card.medium{ border-left-color:#f0a500;} .form-card.high,.form-card.unknown{ border-left-color:var(--red);}
+    .form-card h3 { margin:0 0 4px; font-size:14.5px; display:flex; justify-content:space-between; align-items:center; }
+    .form-pct { font-size:12px; font-weight:800; padding:2px 9px; border-radius:999px; background:var(--accent-soft); color:var(--accent); }
+    .form-card.high .form-pct{ background:var(--red-bg); color:var(--red);} .form-card.medium .form-pct{ background:var(--orange-bg); color:var(--orange);}
+    .form-card p { margin:6px 0 0; font-size:13px; color:var(--muted); }
+
+    /* threat cards */
+    .threats { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr)); gap:14px; }
+    .tc { background:var(--card); border:1px solid var(--line); border-left-width:5px; border-radius:12px; padding:14px 16px; }
+    .tc.red{ border-left-color:var(--red);} .tc.orange{ border-left-color:var(--orange);} .tc.green{ border-left-color:var(--green);}
+    .tc-head { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .tc-title { font-size:15px; font-weight:700; }
+    .tc-title .ico{ margin-right:5px; }
+    .pill { font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; white-space:nowrap; text-transform:uppercase; letter-spacing:.02em; }
+    .pill.red{ background:var(--red-bg); color:var(--red);} .pill.orange{ background:var(--orange-bg); color:var(--orange);} .pill.green{ background:var(--green-bg); color:var(--green);}
+    .tc-meta { font-size:13px; color:var(--muted); margin:6px 0 0; }
+    .tc-meta b { color:var(--ink); font-weight:600; }
+    .ami-badge { display:inline-block; font-size:11.5px; font-weight:700; color:var(--accent); background:var(--accent-soft); padding:2px 8px; border-radius:999px; margin-top:8px; }
+    .tc details { margin-top:10px; border-top:1px dashed var(--line); padding-top:8px; }
+    .tc summary { cursor:pointer; font-size:13px; font-weight:700; color:var(--accent); }
+    .tc details ul { margin:8px 0 4px; padding-left:18px; } .tc details li { font-size:13px; margin:5px 0; }
+    .funders { margin-top:8px; } .funder { font-size:12.5px; background:#f4f7f6; border:1px solid var(--line); border-radius:8px; padding:6px 9px; margin:5px 0; }
+    .funder b { color:var(--ink); } .funder small { color:var(--muted); display:block; margin-top:1px; }
+    .tc-src { font-size:12px; margin-top:8px; } .tc-src a{ font-weight:600; }
+
+    /* conflict panel */
+    .conflict { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; }
+    .conflict .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    button.go { font:inherit; font-weight:700; border:none; background:var(--accent); color:#fff; border-radius:9px; padding:10px 17px; cursor:pointer; }
+    button.go:hover{ background:#095749; } button.go:disabled{ opacity:.55; cursor:default; }
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--accent-soft); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; vertical-align:-2px; margin-right:6px; }
+    @keyframes spin { to{ transform:rotate(360deg);} }
+    @media (prefers-reduced-motion: reduce){ .spinner{ animation:none; } .skel{ animation:none !important; } }
+    .conflict-out { margin-top:14px; font-size:14px; } .conflict-out h2{ font-size:16px; color:var(--accent); margin-top:18px; } .conflict-out a{ color:var(--accent); }
+    .empty { color:var(--muted); font-size:13.5px; padding:10px 0; }
+
+    /* error + loading */
+    .error-panel { background:var(--red-bg); border:1px solid #e6b3b3; border-radius:12px; padding:16px 18px; margin-bottom:22px; }
+    .error-panel b { color:var(--red); } .error-panel button { margin-top:10px; }
+    .banner { background:var(--orange-bg); border:1px solid #f0c674; color:#6b4e00; border-radius:8px; padding:6px 10px; font-size:12.5px; }
+    .skel { background:linear-gradient(90deg,#eef2f4 25%,#e3e8ee 37%,#eef2f4 63%); background-size:400% 100%; animation:sh 1.3s ease infinite; border-radius:8px; }
+    @keyframes sh { 0%{background-position:100% 0} 100%{background-position:0 0} }
+    .skel-kpi { height:74px; border:1px solid var(--line); }
+    .skel-card { height:150px; border:1px solid var(--line); }
+
+    .footer-note { color:var(--muted); font-size:12.5px; margin-top:30px; border-top:1px solid var(--line); padding-top:14px; }
+    .footer-note code { background:#eef2f4; padding:1px 5px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">🌪️ Acts of Mercy International<small>Disaster Watch — predictive threat board</small></div>
+      <div class="navlinks">
+        <a href="/">← Document tools</a>
+        <a href="/grants.html">🎯 Grant helper</a>
+      </div>
+    </div>
+
+    <h1>Where the next crisis is coming from</h1>
+    <p class="lede">Live hurricane, disaster, and conflict signals for the places AMI serves — so you can pre-position and line up funding
+      <em>before</em> landfall, not after. Storm &amp; hazard data is live; the conflict watch runs on demand.</p>
+
+    <div class="warn">
+      <strong>Read me:</strong> This is an AI + open-data helper for AMI staff — <strong>not</strong> an emergency service or official warning.
+      For life-safety decisions, follow NOAA / local authorities. Verify every alert on the source before acting.
+    </div>
+
+    <div class="asof">
+      <button class="rf" id="refresh">↻ Refresh</button>
+      <span id="asof-txt" aria-live="polite">Loading live data…</span>
+    </div>
+
+    <div class="error-panel" id="error-panel" style="display:none;">
+      <b>⚠️ Couldn't load the live feeds.</b>
+      <div id="error-msg" style="font-size:13px;margin-top:4px;"></div>
+      <button class="rf" id="error-retry">↻ Try again</button>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <!-- Hurricane season -->
+    <div class="section">
+      <h2><span aria-hidden="true">🌀</span> Atlantic hurricane season</h2>
+      <p class="sub">The seasonal forecast — how busy this year is expected to be, and where we are in it.</p>
+      <div id="season"></div>
+    </div>
+
+    <!-- Formation watch -->
+    <div class="section">
+      <h2><span aria-hidden="true">🔭</span> Formation watch <span style="font-size:12px;font-weight:500;color:var(--muted);">(the pre-storm signal)</span></h2>
+      <p class="sub">NHC's read on whether a disturbance is likely to spin up into a storm in the next 2–7 days.</p>
+      <div class="form-grid" id="formation"></div>
+    </div>
+
+    <!-- AMI-relevant threats -->
+    <div class="section">
+      <h2><span aria-hidden="true">🎯</span> Threats in AMI regions</h2>
+      <p class="sub">Active hazards hitting a country AMI works in — each with what to do now and which funders to activate.</p>
+      <div class="threats" id="ami-threats"></div>
+      <div class="empty" id="ami-empty" style="display:none;">No active orange/red hazards in AMI regions right now. That's good news — keep the formation watch above in view.</div>
+    </div>
+
+    <!-- Other global -->
+    <div class="section">
+      <h2><span aria-hidden="true">🌍</span> Other global alerts</h2>
+      <p class="sub">Significant hazards elsewhere in the world (context — not currently in an AMI region).</p>
+      <div class="threats" id="other-threats"></div>
+      <div class="empty" id="other-empty" style="display:none;">Nothing else at orange/red globally right now.</div>
+    </div>
+
+    <!-- Conflict forecast (VIEWS) -->
+    <div class="section">
+      <h2><span aria-hidden="true">🔮</span> Conflict forecast <span style="font-size:12px;font-weight:500;color:var(--muted);">(predicted, next ~3 months)</span></h2>
+      <p class="sub">VIEWS model forecast of armed-conflict intensity in AMI regions: where violence is predicted to be worst, and where it's rising. No click, no cost. Updates monthly.</p>
+      <div class="threats" id="conflict-forecast"></div>
+      <div class="empty" id="cf-empty">Loading conflict forecast…</div>
+    </div>
+
+    <!-- Conflict / war -->
+    <div class="section">
+      <h2><span aria-hidden="true">⚔️</span> Conflict &amp; war watch <span style="font-size:12px;font-weight:500;color:var(--muted);">(deep AI dive)</span></h2>
+      <p class="sub">On-demand AI escalation read, grounded in the forecast above plus a live news search. Which conflicts are rising and most likely to worsen. Takes about 2 minutes.</p>
+      <div class="conflict">
+        <div class="row">
+          <button class="go" id="conflict-btn">Run conflict &amp; escalation watch</button>
+          <span id="conflict-status" aria-live="polite" style="font-size:13px;color:var(--muted);"></span>
+        </div>
+        <div class="conflict-out" id="conflict-out"></div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <strong>Watching for AMI in:</strong> <span id="watch-countries">…</span><br>
+      Tell us your real partner countries and we'll tune this list (it lives in <code>backend/disasters.py</code>).<br><br>
+      <strong>Sources:</strong> NOAA / National Hurricane Center (storms + formation), GDACS (global multi-hazard), and live web search (conflict).
+      AI-generated for informational use only — verify before acting. <span id="src-status"></span>
+    </div>
+  </div>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const num = v => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+    const title = s => String(s == null ? '' : s).replace(/\b\w/g, x => x.toUpperCase());
+    const safeUrl = u => (typeof u === 'string' && /^https?:\/\//i.test(u)) ? u : '#';
+    const SEV = { red:'SEVERE', orange:'SIGNIFICANT', green:'MINOR' };
+    let hasRendered = false;
+
+    // Sanitize AI/web-derived markdown before injecting as HTML (XSS defense).
+    function renderMarkdown(md) {
+      const html = marked.parse(md || '');
+      if (window.DOMPurify) return DOMPurify.sanitize(html, { ADD_ATTR: ['target', 'rel'] });
+      return esc(md || '');   // no sanitizer available → show as escaped text, never raw HTML
+    }
+
+    function skeletons() {
+      $('#kpis').innerHTML = Array.from({length:6}, () => '<div class="kpi skel skel-kpi"></div>').join('');
+      $('#ami-threats').innerHTML = Array.from({length:2}, () => '<div class="skel skel-card"></div>').join('');
+      $('#other-threats').innerHTML = '';
+    }
+
+    async function load(force) {
+      $('#asof-txt').textContent = force ? 'Refreshing…' : 'Loading live data…';
+      if (!hasRendered) { $('#error-panel').style.display = 'none'; skeletons(); }
+      try {
+        const res = await fetch('/api/disasters' + (force ? '?refresh=1' : ''));
+        if (!res.ok) throw new Error('server returned HTTP ' + res.status);
+        const d = await res.json();
+        if (d.error) throw new Error(d.error);
+        render(d);
+        hasRendered = true;
+        $('#error-panel').style.display = 'none';
+      } catch (e) {
+        if (hasRendered) {
+          // keep the last good render; show a small non-destructive banner
+          $('#asof-txt').innerHTML = '<span class="banner">⚠️ Couldn\'t refresh (' + esc(e.message) + ') — showing last good data.</span>';
+        } else {
+          $('#kpis').innerHTML = ''; $('#ami-threats').innerHTML = '';
+          $('#asof-txt').textContent = '';
+          $('#error-msg').textContent = e.message;
+          $('#error-panel').style.display = 'block';
+        }
+      }
+    }
+
+    function render(d) {
+      const s = d.summary || {}, se = d.season || {};
+      const gen = d.generated ? new Date(d.generated) : null;
+      const when = (gen && !isNaN(gen)) ? gen.toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}) : 'just now';
+      const stale = d.stale ? ' <span class="banner">⚠️ feeds slow — last good data</span>' : '';
+      $('#asof-txt').innerHTML = 'Live as of <b>' + esc(when) + '</b> · auto-refreshes every 30 min · showing orange &amp; red alerts' + stale;
+      $('#src-status').textContent = d.errors && d.errors.length ? ('· feed issues: ' + d.errors.join('; ')) : '· all feeds OK';
+      $('#watch-countries').textContent = (d.ami_countries||[]).map(title).join(', ');
+
+      // KPIs  (last flag = render as text, not a big number)
+      const seasonTag = se.active ? ('Day ' + num(se.day) + '/' + num(se.total_days) + ' · peak in ' + num(se.days_to_peak) + 'd') : 'off-season';
+      $('#kpis').innerHTML = [
+        ['accent', s.total ?? 0, 'Active alerts (orange+red)', false],
+        ['red', s.red ?? 0, '🔴 Red — severe', false],
+        ['orange', s.orange ?? 0, '🟠 Orange — significant', false],
+        ['accent', s.ami_relevant ?? 0, '🎯 In AMI regions', false],
+        ['', s.active_storms ?? 0, '🌀 Active storms · ' + num(s.atlantic_storms) + ' Atlantic', false],
+        ['', seasonTag, 'Hurricane season · ' + esc(se.outlook||''), true],
+      ].map(([c,n,l,txt]) => '<div class="kpi '+c+'"><div class="n'+(txt?' txt':'')+'">'+esc(String(n))+'</div><div class="l">'+l+'</div></div>').join('');
+
+      // Season
+      const pk = num(se.total_days) ? Math.round(100*(num(se.day)+num(se.days_to_peak))/num(se.total_days)) : 60;
+      const pB = num(se.prob&&se.prob.below), pN = num(se.prob&&se.prob.near), pA = num(se.prob&&se.prob.above);
+      $('#season').innerHTML =
+        '<div class="season">'
+        + '<div class="season-out">NOAA calls for a <b>'+esc(se.outlook||'—')+'</b> season. <span style="color:var(--muted)">'+esc(se.note||'')+'</span></div>'
+        + '<div class="season-nums">'
+        +   '<div><span>'+esc(se.named_storms||'—')+'</span><small>named storms</small></div>'
+        +   '<div><span>'+esc(se.hurricanes||'—')+'</span><small>hurricanes</small></div>'
+        +   '<div><span>'+esc(se.major_hurricanes||'—')+'</span><small>major (Cat 3+)</small></div>'
+        + '</div>'
+        + '<div class="prob"><div class="prob-bar">'
+        +   '<i class="b" style="width:'+pB+'%"></i><i class="n" style="width:'+pN+'%"></i><i class="a" style="width:'+pA+'%"></i>'
+        + '</div><div class="prob-key"><span>Below-normal '+pB+'%</span><span>Near-normal '+pN+'%</span><span>Above-normal '+pA+'%</span></div></div>'
+        + '<div class="track"><div class="done" style="width:'+num(se.pct_through)+'%"></div><div class="peak" style="left:'+pk+'%" title="Statistical peak"></div></div>'
+        + '<div class="track-key"><span>Jun 1</span><span>▲ peak ~Sep 10</span><span>Nov 30</span></div>'
+        + '<div class="tc-src" style="margin-top:10px;">Source: <a href="'+esc(safeUrl(se.source))+'" target="_blank" rel="noopener noreferrer">NOAA 2026 outlook</a></div>'
+        + '</div>';
+
+      // Formation
+      $('#formation').innerHTML = (d.formation||[]).map(f =>
+        '<div class="form-card '+esc(f.risk)+'"><h3>'+esc(f.basin)+' <span class="form-pct">'+(f.risk==='none'?'Quiet':num(f.max_pct)+'%')+'</span></h3><p>'+esc(f.summary)+'</p></div>'
+      ).join('') || '<div class="empty">Formation outlook unavailable.</div>';
+
+      // Threats split
+      const threats = Array.isArray(d.threats) ? d.threats : [];
+      const ami = threats.filter(t=>t.ami_relevant);
+      const other = threats.filter(t=>!t.ami_relevant);
+      $('#ami-threats').innerHTML = ami.map(threatCard).join('');
+      $('#other-threats').innerHTML = other.map(threatCard).join('');
+      $('#ami-empty').style.display = ami.length ? 'none' : 'block';
+      $('#other-empty').style.display = other.length ? 'none' : 'block';
+    }
+
+    function threatCard(t) {
+      const meta = [];
+      if (t.region) meta.push('<div class="tc-meta"><span aria-hidden="true">📍</span> <b>'+esc(t.region)+'</b></div>');
+      if (t.winds_mph) meta.push('<div class="tc-meta"><span aria-hidden="true">💨</span> '+num(t.winds_mph)+' mph · '+esc(t.movement||'')+'</div>');
+      if (t.position) meta.push('<div class="tc-meta"><span aria-hidden="true">🧭</span> '+esc(t.position)+' · '+esc(t.basin||'')+'</div>');
+      if (t.forecast) meta.push('<div class="tc-meta" style="color:var(--orange);font-weight:700;"><span aria-hidden="true">🛰️</span> '+esc(t.forecast)+'</div>');
+      if (t.severity) meta.push('<div class="tc-meta"><b>Impact:</b> '+esc(t.severity)+'</div>');
+      if (t.hazard_class === 'drought') meta.push('<div class="tc-meta" style="color:var(--orange);"><span aria-hidden="true">🍽️</span> Slow-onset food-security risk. Line up water / food funding before it peaks.</div>');
+      const r = t.readiness || {};
+      const actions = (r.actions||[]).map(a=>'<li>'+esc(a)+'</li>').join('');
+      const funders = (r.funders||[]).map(f=>'<div class="funder"><b>'+esc(f.name)+'</b><small>'+esc(f.detail)+'</small></div>').join('');
+      const ready = actions
+        ? '<details '+(t.ami_relevant?'open':'')+'><summary>What AMI should do now</summary><ul>'+actions+'</ul>'
+          + (funders?'<div class="funders"><div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:2px;">Funders to activate:</div>'+funders+'</div>':'')
+          + '</details>'
+        : '';
+      const hits = Array.isArray(t.ami_countries) ? t.ami_countries.filter(Boolean).map(c=>esc(title(c))) : [];
+      const sev = SEV[t.alert] || esc(t.alert);
+      return '<div class="tc '+esc(t.alert)+'">'
+        + '<div class="tc-head"><div class="tc-title"><span class="ico" aria-hidden="true">'+esc(t.icon||'⚠️')+'</span>'+esc(t.name)+'</div>'
+        +   '<span class="pill '+esc(t.alert)+'">'+sev+'</span></div>'
+        + '<div class="tc-meta"><b>'+esc(t.hazard_label||'')+'</b></div>'
+        + meta.join('')
+        + (t.ami_relevant && hits.length ? '<div class="ami-badge">🎯 AMI: '+hits.join(', ')+'</div>' : '')
+        + ready
+        + '<div class="tc-src">Source: <a href="'+esc(safeUrl(t.url))+'" target="_blank" rel="noopener noreferrer">'+esc(t.source||'link')+'</a></div>'
+        + '</div>';
+    }
+
+    // Conflict forecast (VIEWS) — predictive, no cost
+    const TREND = { rising:'&#9650; rising', easing:'&#9660; easing', steady:'&#9644; steady' };
+    const TREND_C = { rising:'var(--red)', easing:'var(--green)', steady:'var(--muted)' };
+    async function loadConflictForecast() {
+      try {
+        const res = await fetch('/api/conflict-forecast');
+        const d = await res.json();
+        const rows = Array.isArray(d.countries) ? d.countries : [];
+        const box = $('#conflict-forecast'), empty = $('#cf-empty');
+        if (!rows.length) { box.innerHTML=''; empty.textContent = d.error ? ('&#9888; '+d.error) : 'No conflict forecast available.'; empty.style.display='block'; return; }
+        empty.style.display='none';
+        box.innerHTML = rows.map(r => {
+          const pf = num(r.pred_fatalities);
+          const alert = pf>=200 ? 'red' : (pf>=25 ? 'orange' : 'green');
+          return '<div class="tc '+alert+'">'
+            + '<div class="tc-head"><div class="tc-title">'+esc(r.country)+'</div><span class="pill '+alert+'">'+(SEV[alert]||'')+'</span></div>'
+            + '<div class="tc-meta"><b>~'+pf+'</b> predicted conflict deaths / month</div>'
+            + '<div class="tc-meta">Probability of conflict: <b>'+Math.round(num(r.probability)*100)+'%</b></div>'
+            + '<div class="tc-meta" style="color:'+(TREND_C[r.trend]||'var(--muted)')+';font-weight:700;">'+(TREND[r.trend]||esc(r.trend))+'</div>'
+            + '</div>';
+        }).join('');
+      } catch (e) { $('#cf-empty').textContent = '&#9888; '+e.message; $('#cf-empty').style.display='block'; }
+    }
+
+    // Conflict watch (on-demand)
+    $('#conflict-btn').addEventListener('click', async () => {
+      const btn = $('#conflict-btn');
+      btn.disabled = true;
+      $('#conflict-status').innerHTML = '<span class="spinner" role="status" aria-label="Searching"></span>Searching live reporting — 2–3 minutes…';
+      $('#conflict-out').innerHTML = '';
+      try {
+        const res = await fetch('/api/conflict-watch', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text:''})});
+        const d = await res.json();
+        if (d.error) { $('#conflict-status').textContent = '⚠️ ' + d.error; }
+        else if (!d.markdown || !d.markdown.trim()) { $('#conflict-status').textContent = 'No notable escalation reported right now.'; }
+        else { $('#conflict-out').innerHTML = renderMarkdown(d.markdown); $('#conflict-status').textContent = ''; }
+      } catch (e) { $('#conflict-status').textContent = '⚠️ ' + e.message; }
+      finally { btn.disabled = false; }
+    });
+
+    $('#refresh').addEventListener('click', () => { $('#refresh').disabled = true; load(true).finally(()=>{ $('#refresh').disabled = false; }); });
+    $('#error-retry').addEventListener('click', () => load(true));
+    load(false);
+    loadConflictForecast();
+    // gentle auto-refresh every 30 min while the tab is open
+    setInterval(() => { if (!document.hidden) load(false); }, 30*60*1000);
+  </script>
+</body>
+</html>

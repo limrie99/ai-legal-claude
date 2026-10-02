@@ -1,1 +1,7 @@
 .env
+
+# runtime artifacts
+ailegal.out
+__pycache__/
+digest_state.json
+digests/
