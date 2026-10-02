@@ -5,3 +5,4 @@ ailegal.out
 __pycache__/
 digest_state.json
 digests/
+spend_ledger.json
