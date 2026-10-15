@@ -182,17 +182,16 @@ function wireUpload() {
 
 function handleFile(file) {
   const validTypes = [
-    'application/pdf',
     'text/plain',
     'text/markdown',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   ];
-  const validExts = ['.pdf', '.txt', '.md', '.doc', '.docx'];
+  const validExts = ['.txt', '.md', '.doc', '.docx'];
   const ext = '.' + file.name.split('.').pop().toLowerCase();
 
   if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
-    alert('Unsupported file type. Please upload a .pdf, .txt, .md, .doc, or .docx file.');
+    alert('Unsupported file type. Please upload a .txt, .md, .doc, or .docx file, or paste the text.');
     return;
   }
 
@@ -211,40 +210,19 @@ function handleFile(file) {
   if (pasteSection) pasteSection.style.display = 'none';
   if (demoSection) demoSection.style.display = 'none';
 
-  // Read the file
-  if (ext === '.pdf') {
-    // For PDFs, we read as text (basic extraction). Real PDF parsing would need a library.
-    const reader = new FileReader();
-    reader.onload = () => {
-      // Try to extract text from PDF (basic approach)
-      const text = extractTextFromPDFBinary(reader.result);
-      uploadedContractText = text || null;
-      useRealAI = !!uploadedContractText;
-      $('#upload-file-status').textContent = uploadedContractText ? 'Parsed' : 'Parsed (demo)';
-      $('#upload-file-status').style.color = 'var(--green)';
-      $('#upload-file-status').style.animation = 'none';
-      const meta = uploadedContractText
-        ? `${uploadedContractText.split('\\n').length} lines \u00b7 ${uploadedContractText.split(/\\s+/).filter(Boolean).length.toLocaleString()} words`
-        : `PDF document \u00b7 ${formatFileSize(file.size)}`;
-      startAnalysis(file.name, meta);
-    };
-    reader.readAsArrayBuffer(file);
-  } else {
-    // Read text-based files
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = reader.result;
-      uploadedContractText = text;
-      useRealAI = true;
-      const lineCount = text.split('\n').length;
-      const wordCount = text.split(/\s+/).filter(Boolean).length;
-      $('#upload-file-status').textContent = 'Parsed';
-      $('#upload-file-status').style.color = 'var(--green)';
-      $('#upload-file-status').style.animation = 'none';
-      startAnalysis(file.name, `${lineCount} lines \u00b7 ${wordCount.toLocaleString()} words`);
-    };
-    reader.readAsText(file);
-  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = reader.result;
+    uploadedContractText = text;
+    useRealAI = true;
+    const lineCount = text.split('\n').length;
+    const wordCount = text.split(/\s+/).filter(Boolean).length;
+    $('#upload-file-status').textContent = 'Parsed';
+    $('#upload-file-status').style.color = 'var(--green)';
+    $('#upload-file-status').style.animation = 'none';
+    startAnalysis(file.name, `${lineCount} lines \u00b7 ${wordCount.toLocaleString()} words`);
+  };
+  reader.readAsText(file);
 }
 
 function handlePastedText(text) {
@@ -471,24 +449,6 @@ function onAllAgentsCompleteLive() {
       setStatus('', 'Complete');
     }
   }, 3000);
-}
-
-// ── Basic PDF text extraction (best-effort) ──
-function extractTextFromPDFBinary(arrayBuffer) {
-  try {
-    const bytes = new Uint8Array(arrayBuffer);
-    const text = new TextDecoder('utf-8', { fatal: false }).decode(bytes);
-    const parts = [];
-    const streamRegex = /stream\s*\n([\s\S]*?)endstream/g;
-    let match;
-    while ((match = streamRegex.exec(text)) !== null) {
-      const chunk = match[1].replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s{3,}/g, ' ').trim();
-      if (chunk.length > 20) parts.push(chunk);
-    }
-    if (parts.length > 0) return parts.join('\n\n');
-    const readable = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s{3,}/g, ' ').trim();
-    return readable.length > 100 ? readable : null;
-  } catch { return null; }
 }
 
 // ── Start Demo ──

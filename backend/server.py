@@ -432,8 +432,11 @@ class AnalysisSession:
     def __init__(self):
         self.queue = queue.Queue()
         self.done = threading.Event()
+        self.findings = []
 
     def send(self, event_type, data):
+        if event_type == "finding":
+            self.findings.append(data)
         self.queue.put(f"event: {event_type}\ndata: {json.dumps(data)}\n\n")
 
     def finish(self):
@@ -464,9 +467,7 @@ def run_agent(agent, contract_text, session):
         record_usage(response)
 
         # Parse the response — each line should be a JSON finding
-        # First TEXT block, not content[0]: thinking-enabled models lead with a
-        # `thinking` block whose .text is None. Same pattern already used at the
-        # web-search call sites in this file.
+        # First TEXT block, not content[0]: thinking-enabled models lead with a `thinking` block whose .text is None.
         text = "".join(getattr(b, "text", "") for b in response.content if getattr(b, "type", "") == "text").strip()
         for line in text.split("\n"):
             line = line.strip()
@@ -519,9 +520,6 @@ def run_scoring(contract_text, all_findings_text, session):
             }],
         )
         record_usage(response)
-        # First TEXT block, not content[0]: thinking-enabled models lead with a
-        # `thinking` block whose .text is None. Same pattern already used at the
-        # web-search call sites in this file.
         text = "".join(getattr(b, "text", "") for b in response.content if getattr(b, "type", "") == "text").strip()
         # Try to parse JSON from the response
         for line in text.split("\n"):
@@ -544,13 +542,8 @@ def run_analysis(contract_text, session):
     session.send("system", {"message": "Contract received — launching 5 parallel agents..."})
 
     threads = []
-    all_findings = []
-
-    def agent_wrapper(agent):
-        run_agent(agent, contract_text, session)
-
     for agent in AGENTS:
-        t = threading.Thread(target=agent_wrapper, args=(agent,), daemon=True)
+        t = threading.Thread(target=run_agent, args=(agent, contract_text, session), daemon=True)
         threads.append(t)
         t.start()
 
@@ -559,8 +552,12 @@ def run_analysis(contract_text, session):
 
     session.send("system", {"message": "All 5 agents complete — calculating score..."})
 
-    # Collect findings for scoring (from queue is tricky, so just re-summarize)
-    run_scoring(contract_text, "Analysis of contract complete with 5 agents.", session)
+    lines = []
+    for f in session.findings:
+        name = f.get("agentName") or f.get("agent") or ""
+        summary = (f.get("summary") or "").replace("\n", " ")
+        lines.append(f"[{name}] {f.get('type', '')} {f.get('badge', '')}: {summary}")
+    run_scoring(contract_text, "\n".join(lines), session)
 
     session.finish()
 
