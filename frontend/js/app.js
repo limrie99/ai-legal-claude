@@ -7,7 +7,7 @@ let startTime = null;
 let elapsedTimer = null;
 let eventCounter = 0;
 let uploadedContractText = null; // Stores the actual uploaded contract text for real AI analysis
-let useRealAI = false; // Whether to use real API or demo simulation
+let useRealAI = false; // True once an uploaded or pasted document has text to send
 let collectedFindings = []; // All findings collected during analysis for PDF generation
 let finalScoreData = null; // Score data for PDF
 
@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
   wireButtons();
   wireUpload();
   wireDisclaimer();
-  $('#btn-demo').addEventListener('click', startDemo);
+  const demoSection = document.querySelector('.demo-section');
+  if (demoSection) demoSection.style.display = 'none';
 });
 
 // ── Build sidebar agent list ──
@@ -300,13 +301,13 @@ function startAnalysis(fileName, fileMeta) {
 
     addDisclaimerEvent();
 
-    // Try real AI API first, fall back to demo
     if (useRealAI && uploadedContractText) {
       addSystemEvent(`Contract uploaded: ${fileName} \u2014 connecting to AI...`);
       startRealAnalysis(uploadedContractText);
     } else {
-      addSystemEvent('Running demo analysis (upload a .txt or .md file for real AI analysis)...');
-      agents.forEach(agent => launchAgent(agent));
+      addSystemEvent('No contract text to analyze.');
+      clearInterval(elapsedTimer);
+      setStatus('', 'Stopped');
     }
   }, 600);
 }
@@ -324,8 +325,9 @@ async function startRealAnalysis(contractText) {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({ error: 'Server error' }));
-      addSystemEvent(`API Error: ${err.error || 'Unknown error'} \u2014 falling back to demo mode`);
-      agents.forEach(agent => launchAgent(agent));
+      addSystemEvent(`API Error: ${err.error || 'Unknown error'}`);
+      clearInterval(elapsedTimer);
+      setStatus('', 'Stopped');
       return;
     }
 
@@ -364,8 +366,9 @@ async function startRealAnalysis(contractText) {
       }
     }
   } catch (err) {
-    addSystemEvent(`Connection failed: ${err.message} \u2014 falling back to demo mode`);
-    agents.forEach(agent => launchAgent(agent));
+    addSystemEvent(`Connection failed: ${err.message}`);
+    clearInterval(elapsedTimer);
+    setStatus('', 'Stopped');
   }
 }
 
@@ -489,113 +492,6 @@ function extractTextFromPDFBinary(arrayBuffer) {
     const readable = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s{3,}/g, ' ').trim();
     return readable.length > 100 ? readable : null;
   } catch { return null; }
-}
-
-// ── Start Demo ──
-function startDemo() {
-  // Clear empty state
-  const empty = $('#event-empty');
-  if (empty) empty.remove();
-
-  // Set contract info
-  const info = $('#contract-info');
-  info.querySelector('.contract-name').textContent = contract.name;
-  info.querySelector('.contract-meta').innerHTML = `
-    <span>${contract.parties}</span>
-    <span>${contract.type} \u00b7 ${contract.value}</span>
-    <span>${contract.effectiveDate} \u00b7 ${contract.term}</span>
-    <span>Governing Law: ${contract.governingLaw}</span>
-  `;
-
-  // Status
-  setStatus('active', 'Analyzing...');
-  startTime = performance.now();
-  updateElapsed();
-
-  // Disclaimer event first
-  addDisclaimerEvent();
-
-  // System event
-  addSystemEvent('Contract loaded \u2014 launching 5 parallel agents...');
-
-  // Launch all agents in parallel
-  agents.forEach(agent => launchAgent(agent));
-}
-
-// ── Launch Agent ──
-function launchAgent(agent) {
-  const sidebarItem = $(`.agent-item[data-agent="${agent.id}"]`);
-  const lane = $(`.timeline-lane[data-agent="${agent.id}"]`);
-  const progress = lane.querySelector('.lane-progress');
-  const check = lane.querySelector('.lane-complete-check');
-
-  // Set analyzing state
-  sidebarItem.dataset.status = 'analyzing';
-  sidebarItem.querySelector('.agent-dot').style.background = agent.color;
-  sidebarItem.querySelector('.agent-status').textContent = 'analyzing';
-  sidebarItem.style.borderLeftColor = agent.color;
-
-  // Add agent-start event
-  addEvent({
-    agent: agent.id,
-    agentName: agent.name,
-    agentColor: agent.color,
-    type: 'system',
-    badge: 'Agent',
-    summary: `${agent.name} started (${agent.weight} weight)`,
-    isStart: true,
-  });
-
-  // Animate progress bar
-  let progressVal = 0;
-  const progressInterval = setInterval(() => {
-    progressVal += (90 - progressVal) * 0.04;
-    progress.style.width = progressVal + '%';
-  }, 50);
-
-  // Schedule events
-  agent.events.forEach(evt => {
-    setTimeout(() => {
-      // Add dot to timeline
-      addTimelineDot(lane, evt, agent);
-      // Add row to event stream
-      addEvent({
-        agent: agent.id,
-        agentName: agent.name,
-        agentColor: agent.color,
-        type: evt.type,
-        badge: evt.badge,
-        summary: evt.summary,
-        detail: evt.detail,
-      });
-    }, evt.time);
-  });
-
-  // Agent complete
-  setTimeout(() => {
-    clearInterval(progressInterval);
-    progress.style.width = '100%';
-    progress.style.opacity = '0.08';
-    check.classList.add('visible');
-
-    sidebarItem.dataset.status = 'complete';
-    sidebarItem.querySelector('.agent-status').textContent = agent.summary;
-
-    updateAgentCount();
-    checkAllComplete();
-  }, agent.duration);
-}
-
-// ── Timeline Dots ──
-function addTimelineDot(lane, evt, agent) {
-  const track = lane.querySelector('.lane-track');
-  const dot = document.createElement('div');
-  dot.className = `lane-event-dot ${evt.type}`;
-  // Position: spread across 10%-90% of track width
-  const pct = 10 + (evt.time / agent.duration) * 80;
-  dot.style.left = pct + '%';
-  dot.title = `${evt.badge}: ${evt.summary}`;
-  track.appendChild(dot);
 }
 
 // ── Event Stream ──
@@ -730,27 +626,6 @@ function updateAgentCount() {
   $('#agent-count-badge').textContent = `${done} / 5`;
 }
 
-function checkAllComplete() {
-  const done = $$('.agent-item[data-status="complete"]').length;
-  if (done < 5) return;
-
-  clearInterval(elapsedTimer);
-  setStatus('', 'Complete');
-
-  // Final summary
-  setTimeout(() => {
-    finalScoreData = { score: contract.score, grade: contract.grade, label: contract.label, summary: `Score: ${contract.score}/100 (${contract.grade})` };
-    addSystemEvent(`All 5 agents complete \u2014 Contract Safety Score: ${contract.score}/100 (${contract.grade} \u2014 ${contract.label})`);
-    addSystemEvent(`Estimated exposure: $420,000 - $1,235,000+ against $15,000 contract \u2014 DO NOT SIGN without major revisions`);
-    addDisclaimerEvent();
-
-    // Show score gauge, PDF button, and contract viewer button
-    showScore();
-    showPdfButton();
-    showViewerButton();
-  }, 500);
-}
-
 // ── PDF Download ──
 let pdfWired = false;
 
@@ -864,8 +739,7 @@ function toggleContractViewer() {
 function renderHighlightedContract() {
   const body = $('#viewer-body');
 
-  // Use uploaded text or demo contract text
-  const rawText = uploadedContractText || getDemoContractText();
+  const rawText = uploadedContractText;
   if (!rawText) {
     body.innerHTML = '<div style="color:var(--text-dim);text-align:center;padding:40px;">No contract text available to display.</div>';
     return;
@@ -905,119 +779,6 @@ function renderHighlightedContract() {
   }
 
   body.innerHTML = html;
-}
-
-function getDemoContractText() {
-  return `INDEPENDENT CONTRACTOR SERVICES AGREEMENT
-Nexus Digital Solutions LLC — Professional Services Contract
-
-This Independent Contractor Services Agreement (the "Agreement") is entered into as of March 1, 2026 (the "Effective Date"), by and between:
-
-Nexus Digital Solutions LLC, a Delaware limited liability company with its principal place of business at 1200 Innovation Drive, Suite 400, Wilmington, DE 19801 (hereinafter referred to as "Client" or "Company"), and
-
-The undersigned independent contractor (hereinafter referred to as "Contractor").
-
-1. SCOPE OF SERVICES
-
-1.1. Contractor shall perform website redesign and development services for Client's corporate website (the "Project"), including but not limited to: user interface design, front-end development, back-end integration, content migration, quality assurance testing, and deployment to production environment.
-
-1.2. The Project shall be completed in accordance with the specifications outlined in Exhibit A (attached hereto and incorporated by reference), as may be modified by Client from time to time in its sole discretion.
-
-1.3. Contractor shall provide all necessary revisions, modifications, and adjustments to deliverables at no additional cost until Client confirms full satisfaction with the final output. There shall be no limitation on the number of revision cycles, and Contractor acknowledges that iterative refinement is an inherent component of the creative development process contemplated under this Agreement.
-
-1.4. Contractor shall devote sufficient time and resources to ensure timely completion of the Project and shall be available for reasonable consultation during Client's standard business hours.
-
-2. COMPENSATION AND PAYMENT
-
-2.1. In consideration for the services rendered hereunder, Client shall pay Contractor a total project fee of Fifteen Thousand Dollars ($15,000.00), payable in milestone installments as follows:
-Phase 1 — Project kickoff and wireframes: $3,000.00
-Phase 2 — Design mockups and approval: $4,000.00
-Phase 3 — Development and integration: $5,000.00
-Phase 4 — Testing, launch, and handoff: $3,000.00
-
-2.2. Payment for each milestone shall be due within ninety (90) days following Client's receipt of a proper invoice from Contractor. Client reserves the right to withhold payment for any deliverable that Client determines, in its reasonable judgment, to be unsatisfactory or not in conformance with the Project specifications.
-
-2.3. Contractor shall be solely responsible for all taxes, insurance, and other obligations arising from compensation received under this Agreement.
-
-2.4. The fees set forth in Section 2.1 constitute the entire compensation payable to Contractor for all services performed under this Agreement, including all revisions contemplated in Section 1.3.
-
-3. INTELLECTUAL PROPERTY RIGHTS
-
-3.1. All work product, deliverables, materials, designs, code, documentation, graphics, and any other output created by Contractor in connection with the Project (collectively, "Work Product"), shall be considered "work made for hire" as defined under the United States Copyright Act (17 U.S.C. § 101). To the extent that any Work Product does not qualify as work made for hire, Contractor hereby irrevocably assigns to Client all right, title, and interest in and to such Work Product.
-
-3.2. The assignment in Section 3.1 includes, without limitation, any pre-existing intellectual property, tools, frameworks, libraries, code snippets, templates, or methodologies that Contractor incorporates into or utilizes in the creation of the Work Product (collectively, "Contractor Materials"). Contractor represents and warrants that Contractor has full authority to assign such Contractor Materials.
-
-3.3. Contractor hereby irrevocably waives, to the fullest extent permitted by applicable law, all moral rights in and to the Work Product worldwide and in perpetuity.
-
-4. CONFIDENTIALITY AND NON-DISCLOSURE
-
-4.1. Contractor acknowledges that during the course of this engagement, Contractor may have access to confidential and proprietary information of Client (collectively, "Confidential Information").
-
-4.2. Contractor shall not, during the term of this Agreement or at any time thereafter, disclose, publish, or otherwise disseminate any Confidential Information to any third party without the prior written consent of Client.
-
-4.3. Contractor shall not, at any time during or after the term of this Agreement, disclose the existence of this Agreement or the business relationship between the parties to any third party. Contractor further agrees that Contractor shall not use any Work Product in Contractor's portfolio, website, social media, marketing materials, or any other public or private communication without the express prior written consent of Client, which may be withheld in Client's sole and absolute discretion.
-
-5. NON-COMPETITION AND NON-SOLICITATION
-
-5.1. During the term of this Agreement and for a period of twenty-four (24) months following its termination or expiration (the "Restricted Period"), Contractor shall not, directly or indirectly, engage in, own, manage, operate, control, be employed by, participate in, consult for, or be connected with any business or activity that is competitive with Client's business within the technology industry.
-
-5.2. During the Restricted Period, Contractor shall not, directly or indirectly, solicit, contact, or attempt to solicit any client, customer, vendor, or business partner of Client for the purpose of providing services similar to those provided under this Agreement.
-
-6. TERM, TERMINATION, AND RENEWAL
-
-6.1. This Agreement shall commence on the Effective Date and shall continue for an initial term of twelve (12) months (the "Initial Term").
-
-6.2. Upon expiration of the Initial Term, this Agreement shall automatically renew for successive periods of twelve (12) months each, unless either party provides written notice of non-renewal at least one hundred twenty (120) days prior to the expiration of the then-current term.
-
-6.3. Client may terminate this Agreement at any time, with or without cause, effective immediately upon written notice to Contractor. In the event of termination by Client under this Section, Client shall have no obligation to compensate Contractor for any work in progress or incomplete deliverables.
-
-6.4. Contractor may terminate this Agreement only upon ninety (90) days' prior written notice to Client. During such notice period, Contractor shall continue to perform all obligations under this Agreement.
-
-6.5. In the event of cancellation or termination of the Project for any reason, Contractor acknowledges and agrees that Contractor shall not be entitled to any compensation for work performed prior to the effective date of termination, except for milestone payments that have been previously approved and invoiced in accordance with Section 2.
-
-7. INDEMNIFICATION
-
-7.1. Contractor shall indemnify, defend, and hold harmless Client and its officers, directors, employees, agents, successors, and assigns from and against any and all claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or relating to: (a) Contractor's performance or failure to perform under this Agreement; (b) any breach of any representation, warranty, or covenant made by Contractor; (c) any negligent or wrongful act or omission of Contractor; or (d) any claim by a third party related to the Work Product, regardless of whether such claim arises in whole or in part from the negligence or acts of Client.
-
-7.2. Contractor's indemnification obligations under this Section shall survive the termination or expiration of this Agreement indefinitely.
-
-8. LIMITATION OF LIABILITY
-
-8.1. IN NO EVENT SHALL CLIENT BE LIABLE TO CONTRACTOR FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES.
-
-8.2. CLIENT'S TOTAL AGGREGATE LIABILITY UNDER THIS AGREEMENT SHALL NOT EXCEED THE AMOUNT OF FEES ACTUALLY PAID BY CLIENT TO CONTRACTOR DURING THE THIRTY (30) DAY PERIOD IMMEDIATELY PRECEDING THE EVENT GIVING RISE TO THE CLAIM.
-
-8.3. The limitations set forth in Sections 8.1 and 8.2 shall apply to Client only. Contractor acknowledges that Contractor's liability under this Agreement shall not be subject to any cap or limitation.
-
-9. REPRESENTATIONS AND WARRANTIES
-
-9.1. Contractor represents and warrants that: (a) Contractor has the right, power, and authority to enter into this Agreement; (b) the Work Product will be original and will not infringe upon any intellectual property rights of any third party; (c) Contractor will perform the services in a professional and workmanlike manner; and (d) Contractor is an independent contractor and not an employee of Client.
-
-9.2. CLIENT MAKES NO WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
-
-10. GOVERNING LAW AND DISPUTE RESOLUTION
-
-10.1. This Agreement shall be governed by and construed in accordance with the laws of the British Virgin Islands, without regard to its conflict of laws principles.
-
-10.2. Any dispute arising out of or relating to this Agreement shall be resolved exclusively in the courts of the British Virgin Islands.
-
-10.3. In the event of any legal action arising under this Agreement, the prevailing party shall be entitled to recover its reasonable attorneys' fees and costs from the non-prevailing party.
-
-11. GENERAL PROVISIONS
-
-11.1. Entire Agreement. This Agreement constitutes the entire agreement between the parties.
-
-11.2. Amendments. This Agreement may not be amended except by a written instrument signed by both parties; provided, however, that Client may modify the Project specifications set forth in Exhibit A at any time upon written notice to Contractor.
-
-11.3. Severability. If any provision is held to be invalid, the remaining provisions shall continue in full force.
-
-11.4. Waiver. Failure to enforce any provision shall not constitute a waiver.
-
-11.5. Assignment. Contractor may not assign this Agreement without Client's consent. Client may freely assign this Agreement.
-
-11.6. Notices. All notices shall be in writing.
-
-11.7. Survival. Sections 3, 4, 5, 7, 8, and 10 shall survive the termination or expiration of this Agreement.`;
 }
 
 // ── Score Gauge ──

@@ -67,14 +67,39 @@ LEGAL_USER = os.environ.get("LEGAL_USER", "")
 LEGAL_PASSWORD = os.environ.get("LEGAL_PASSWORD", "")
 
 _spend_lock = threading.Lock()
-_LEDGER_BROKEN = False  # if the ledger can't be written, fail CLOSED (block spend)
+_LEDGER_BROKEN = False  # unreadable or unwritable ledger → fail CLOSED (block spend)
+
+
+class SpendLedgerError(Exception):
+    """Ledger file exists but cannot be trusted. Do not treat spend as $0."""
+
+
+def _fail_ledger(reason):
+    global _LEDGER_BROKEN
+    if not _LEDGER_BROKEN:
+        print(f"\033[1;31m[BUDGET] spend ledger unusable ({reason}); failing closed.\033[0m")
+    _LEDGER_BROKEN = True
 
 
 def _read_spend():
-    try:
-        return json.loads(SPEND_LEDGER.read_text())
-    except Exception:
+    """Load the spend ledger.
+
+    A missing file is a fresh ledger at $0. A file that exists but cannot be
+    parsed, or that has no numeric spent_usd, fails closed: callers must not
+    report $0 and must not write a reset total back over the file.
+    """
+    if not SPEND_LEDGER.exists():
         return {"spent_usd": 0.0}
+    try:
+        data = json.loads(SPEND_LEDGER.read_text())
+    except Exception as e:
+        _fail_ledger(e)
+        raise SpendLedgerError(str(e)) from e
+    spent = data.get("spent_usd") if isinstance(data, dict) else None
+    if isinstance(spent, bool) or not isinstance(spent, (int, float)):
+        _fail_ledger("spent_usd missing or not a number")
+        raise SpendLedgerError("spent_usd missing or not a number")
+    return data
 
 
 def record_usage(response):
@@ -87,8 +112,11 @@ def record_usage(response):
     except Exception:
         return
     with _spend_lock:
-        d = _read_spend()
-        d["spent_usd"] = round(d.get("spent_usd", 0.0) + cost, 6)
+        try:
+            d = _read_spend()
+        except SpendLedgerError:
+            return
+        d["spent_usd"] = round(float(d["spent_usd"]) + cost, 6)
         try:
             SPEND_LEDGER.write_text(json.dumps(d))
         except Exception as e:
@@ -100,7 +128,10 @@ def record_usage(response):
 
 def spend_so_far():
     with _spend_lock:
-        return _read_spend().get("spent_usd", 0.0)
+        try:
+            return float(_read_spend()["spent_usd"])
+        except SpendLedgerError:
+            return CASH_CAP_USD
 
 
 def over_budget():
