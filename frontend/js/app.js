@@ -494,6 +494,12 @@ function extractTextFromPDFBinary(arrayBuffer) {
   } catch { return null; }
 }
 
+// ── Start Demo ──
+function startDemo() {
+  // Clear empty state
+  return;
+}
+
 // ── Event Stream ──
 function addEvent({ agent, agentName, agentColor, type, badge, summary, detail, isStart }) {
   // Collect for PDF
