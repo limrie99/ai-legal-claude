@@ -106,7 +106,6 @@ def build_digest():
     # save state for next week's diff
     STATE.write_text(json.dumps({
         "threats": {n: t.get("alert") for n, t in now_threats.items()},
-        "conflict": {c["iso"]: c["pred_fatalities"] for c in fc.get("countries", [])},
         "updated": datetime.now(timezone.utc).isoformat(),
     }))
     return digest

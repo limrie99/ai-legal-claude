@@ -5,7 +5,6 @@ Generates professional contract review PDF reports using ReportLab.
 """
 
 import sys
-import os
 import json
 import math
 from datetime import datetime
@@ -20,8 +19,7 @@ try:
         PageBreak, HRFlowable, KeepTogether
     )
     from reportlab.graphics.shapes import Drawing, Circle, Rect, String, Line, Wedge
-    from reportlab.graphics import renderPDF
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.enums import TA_CENTER
 except ImportError:
     print("ERROR: reportlab is required. Install with: pip3 install reportlab")
     sys.exit(1)
@@ -174,18 +172,6 @@ def get_styles():
         name="BodyText2", fontName="Helvetica", fontSize=10,
         textColor=COLORS["dark_text"], spaceBefore=4, spaceAfter=4,
         leading=14
-    ))
-    styles.add(ParagraphStyle(
-        name="RiskHigh", fontName="Helvetica-Bold", fontSize=10,
-        textColor=COLORS["danger"], spaceBefore=2, spaceAfter=2
-    ))
-    styles.add(ParagraphStyle(
-        name="RiskMedium", fontName="Helvetica-Bold", fontSize=10,
-        textColor=COLORS["warning"], spaceBefore=2, spaceAfter=2
-    ))
-    styles.add(ParagraphStyle(
-        name="RiskLow", fontName="Helvetica-Bold", fontSize=10,
-        textColor=COLORS["success"], spaceBefore=2, spaceAfter=2
     ))
     styles.add(ParagraphStyle(
         name="Disclaimer", fontName="Helvetica-Oblique", fontSize=8,
@@ -347,11 +333,6 @@ def build_pdf(data, output_path):
                 "low": COLORS["success"]
             }.get(risk, COLORS["gray_text"])
             risk_emoji = {"high": "HIGH RISK", "medium": "MEDIUM RISK", "low": "LOW RISK"}.get(risk, "")
-            risk_bg = {
-                "high": COLORS["high_risk_bg"],
-                "medium": COLORS["med_risk_bg"],
-                "low": COLORS["low_risk_bg"]
-            }.get(risk, COLORS["light_bg"])
 
             clause_block = []
             clause_block.append(Paragraph(

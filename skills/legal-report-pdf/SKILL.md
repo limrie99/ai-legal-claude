@@ -343,26 +343,15 @@ Use a thin line above the footer to separate it from content.
 
 ## Phase 4: Generate the PDF
 
-### 4.1 Write the Python Script
+### 4.1 Execute the Script
 
-Write a complete Python script that:
-
-1. Reads the analysis markdown file
-2. Parses the sections using string matching / regex
-3. Builds the PDF page by page using ReportLab
-4. Includes all sections from Phase 3
-5. Uses professional styling throughout
-6. Handles missing sections gracefully (skip if data not found)
-
-### 4.2 Execute the Script
-
-Run the script using Bash:
+Run the existing generator:
 
 ```bash
-cd [working directory] && python3 /tmp/generate_legal_pdf.py --input "[analysis_file]" --output "CONTRACT-REVIEW-REPORT.pdf"
+python3 scripts/generate_legal_pdf.py <json_data_file> [output_path]
 ```
 
-### 4.3 Verify Output
+### 4.2 Verify Output
 
 After execution:
 1. Check that the PDF was created successfully

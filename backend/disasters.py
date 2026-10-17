@@ -93,7 +93,6 @@ FUNDER_MATCH = {
     "volcano":    ["semnani", "drk"],
     "wildfire":   ["semnani", "drk"],
     "drought":    ["parkinson", "aja", "gupta"],
-    "conflict":   ["semnani", "drk", "gupta"],
     "default":    ["semnani", "drk"],
 }
 
