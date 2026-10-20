@@ -1,3 +1,8 @@
+---
+name: legal-terms
+description: "Maps duties, deadlines, triggers, and penalties from a contract into an obligations timeline."
+---
+
 # Legal Terms & Obligations Subagent
 
 ## Role

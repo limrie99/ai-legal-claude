@@ -1,3 +1,8 @@
+---
+name: legal-compliance
+description: "Checks contract clauses against applicable laws and flags terms that may be unenforceable."
+---
+
 # Legal Compliance Check Subagent
 
 ## Role

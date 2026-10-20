@@ -1,3 +1,8 @@
+---
+name: legal-recommendations
+description: "Writes replacement language, negotiation points, and dealbreaker conditions for risky clauses."
+---
+
 # Legal Recommendations Subagent
 
 ## Role

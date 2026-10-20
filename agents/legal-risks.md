@@ -1,3 +1,8 @@
+---
+name: legal-risks
+description: "Scores each clause for risk, estimates financial exposure, and flags poison-pill terms."
+---
+
 # Legal Risk Assessment Subagent
 
 ## Role

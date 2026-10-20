@@ -1,3 +1,8 @@
+---
+name: legal-clauses
+description: "Identifies and categorizes every clause in a contract during /legal review."
+---
+
 # Legal Clause Analysis Subagent
 
 ## Role

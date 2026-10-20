@@ -361,4 +361,3 @@ After generating the report:
 3. State how many issues were found at each priority level
 4. Show the full report
 5. Offer: "Would you like me to generate a privacy policy for this site? Run `/legal privacy [url]`."
-6. Offer: "Would you like a detailed review of your terms of service? Run `/legal terms-review [url]`."
