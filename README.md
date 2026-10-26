@@ -148,8 +148,6 @@ ai-legal-claude/
 │   └── legal-recommendations.md    # Recommendations agent
 ├── scripts/
 │   └── generate_legal_pdf.py       # PDF generation (ReportLab)
-├── templates/
-│   └── contract-review-template.md # Report template
 ├── install.sh                      # One-line installer
 ├── uninstall.sh                    # Clean uninstaller
 └── README.md

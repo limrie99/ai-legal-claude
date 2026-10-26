@@ -73,7 +73,6 @@ fi
 # ---------------------------------------------------------------------------
 echo -e "${BLUE}Creating directories...${NC}"
 mkdir -p "$SKILLS_DIR/legal/scripts"
-mkdir -p "$SKILLS_DIR/legal/templates"
 echo -e "  ${GREEN}✓${NC} Skills directory ready"
 
 mkdir -p "$AGENTS_DIR"
@@ -161,20 +160,6 @@ for script in "$SOURCE_DIR"/scripts/*.py; do
 done
 
 # ---------------------------------------------------------------------------
-# Install templates
-# ---------------------------------------------------------------------------
-echo -e "${BLUE}Installing templates...${NC}"
-
-TEMPLATE_COUNT=0
-for template in "$SOURCE_DIR"/templates/*.md; do
-    if [ -f "$template" ]; then
-        cp "$template" "$SKILLS_DIR/legal/templates/"
-        echo -e "  ${GREEN}✓${NC} $(basename "$template")"
-        TEMPLATE_COUNT=$((TEMPLATE_COUNT + 1))
-    fi
-done
-
-# ---------------------------------------------------------------------------
 # Check Python dependencies
 # ---------------------------------------------------------------------------
 echo -e "${BLUE}Checking Python environment...${NC}"
@@ -212,7 +197,6 @@ echo ""
 echo -e "  ${CYAN}Skills:${NC}    $INSTALL_COUNT installed  →  $SKILLS_DIR"
 echo -e "  ${CYAN}Agents:${NC}    $AGENT_COUNT installed  →  $AGENTS_DIR"
 echo -e "  ${CYAN}Scripts:${NC}   $SCRIPT_COUNT installed  →  $SKILLS_DIR/legal/scripts"
-echo -e "  ${CYAN}Templates:${NC} $TEMPLATE_COUNT installed  →  $SKILLS_DIR/legal/templates"
 echo ""
 
 # ---------------------------------------------------------------------------
